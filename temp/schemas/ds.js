@@ -10,7 +10,7 @@ const ds_label = {
         "children": {
             "required": true, 
             "type": "array", 
-            "item": {
+            "items": {
                 "anyOf": [
                     {"$ref": "/ds_label"},
                     {"$ref": "/ds_eval"}
@@ -18,7 +18,8 @@ const ds_label = {
             },
             "minItems": 1
         }
-    } 
+    },
+    "additionalProperties": false
 }
 
 // Evaluation (formerly "test")
@@ -33,7 +34,7 @@ const ds_eval = {
         "criterias": {
             "required": true,
             "type": "array",
-            "item": {"$ref": "/ds_crit"},
+            "items": {"$ref": "/ds_crit"},
             "minItems": 1
         },
         "readinessFlag": {
@@ -42,7 +43,8 @@ const ds_eval = {
             "minimum": 1,
             "maximum": 3
         }
-    }
+    },
+    "additionalProperties": false
 }
 
 // Criteria
@@ -57,10 +59,11 @@ const ds_crit = {
         "indicators": {
             "required": true,
             "type": "array",
-            "item": {"$ref": "/ds_ind"}
+            "items": {"$ref": "/ds_ind"},
             "minItems": 1
         }
-    }
+    },
+    "additionalProperties": false
 }
 
 // Indicator
@@ -75,10 +78,11 @@ const ds_ind = {
         "procedures": {
             "required": true,
             "type": "array",
-            "item": {"$ref": "/ds_proc"},
+            "items": {"$ref": "/ds_proc"},
             "minItems": 1
         }
-    }
+    },
+    "additionalProperties": false
 }
 
 // Procedure
@@ -90,7 +94,8 @@ const ds_proc = {
             "required": true,
             "type": "string"
         }
-    }
+    },
+    "additionalProperties": false
 }
 
 // Digital Standard
@@ -98,11 +103,25 @@ const ds = {
     "id": "/ds",
     "type": "object",
     "properties": {
+        "name": {
+            "required": true,
+            "type": "string"
+        },
         "labels": {
             "required": true,
             "type": "array",
-            "item": {"$ref": "/ds_label"}
+            "items": {"$ref": "/ds_label"},
             "minItems": 1
         }
-    }
+    },
+    "additionalProperties": false
+}
+
+module.exports = {
+    ds: ds,
+    ds_proc: ds_proc,
+    ds_ind: ds_ind,
+    ds_crit: ds_crit,
+    ds_eval: ds_eval,
+    ds_label: ds_label
 }

@@ -17,6 +17,10 @@ to certain standards, which, you know, is probably why we called it the digital 
 
 - here's a problem: since we validate as JSON (because there isn't a good YAML schema validation library for Node.js), we lose formatting (and other?) info from the YAML. what do we want to do about this? do this in python just to use yamale, or write our own yaml schema validation lib? 
 
+- how should we enforce a standard YAML style? (e.g., no quotes on strings except for single quotes to stringify numeric types)
+
+- for split schemas, how do we get jsonschema to pass recursively nested errors down the stack?
+
 ***SCHEMA FOR A STANDARD***
 
 a STANDARD node consists of:

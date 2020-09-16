@@ -3,7 +3,7 @@ labels:
     - name: This is a label, formerly we labeled categories using directory names in the file structure
       children:
         - name: This is an evaluation FOO, formerly known as testName
-          readinessFlag: 2
+          readinessFlag: 4
           criterias: 
             - name: This is a criteria BAR belonging to evaluation FOO
               indicators:

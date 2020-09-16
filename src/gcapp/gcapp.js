@@ -18,12 +18,19 @@ v.addSchema(ds_schema.ds_proc, "/ds_proc");
 try {
     const doc = yaml.safeLoad(fs.readFileSync("/home/noah/work/groundcontrol/temp/ds_test.yml", "utf8"));
     const bad_doc = yaml.safeLoad(fs.readFileSync("/home/noah/work/groundcontrol/temp/ds_test_bad.yml", "utf8"));
+
+    const temp = yaml.safeLoad(fs.readFileSync("/home/noah/work/groundcontrol/temp/Best Build Practices.yaml", "utf8"));
     
-    const doc_res = v.validate(doc, ds_schema.ds);
+    const doc_res = v.validate(doc, ds_schema.ds, {nestedErrors: true});
     console.log(doc_res);
 
-    const bad_doc_res = v.validate(bad_doc, ds_schema.ds);
+    const bad_doc_res = v.validate(bad_doc, ds_schema.ds, {nestedErrors: true});
     console.log(bad_doc_res);
+    
+    console.log(util.inspect(temp, {showHidden: false, depth: 10, colors: true, compact: 10, breakLength: 200}));
+
+    console.log(temp.criterias[0].indicators[0].procedures);
+    console.log(Array.isArray(temp.criterias[0].indicators[0].procedures));
 } catch (err) {
     console.log(err);
 }

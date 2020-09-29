@@ -15,6 +15,7 @@ const Validator = require("jsonschema").Validator;
 const ds_schema = require("../../temp/schemas/ds.js");
 
 const gcutil = require("../gcutil/gcutil.js");
+const Gcntree = require("../gctypes/gcntree/gcntree.js");
 
 const v = new Validator();
 
@@ -32,7 +33,8 @@ const GRAMMAR = new Map([
     ["clear", _clear],
     ["help", _help],
     ["lstd", _lstd],
-    ["fvalid", _fvalid]
+    ["fvalid", _fvalid],
+    ["fcmp", _fcmp]
 ]);
 
 async function _on_input(input) {
@@ -66,11 +68,12 @@ function _help() {
     console.log("+-----------+");
     console.log("| gsch help |");
     console.log("+-----------+\n");
-    console.log("COMMAND\t\t\t\tRESULT");
-    console.log("clear\t\t\t\tClear screen"); 
-    console.log("fvalid [path] [schema ID]\tValidate an external standard file (in YAML format) against a standard schema");
-    console.log("lstd\t\t\t\tList all available standard schemas");
-    console.log("quit\t\t\t\tExit");
+    console.log("COMMAND\t\t\t\t\tRESULT");
+    console.log("clear\t\t\t\t\tClear screen"); 
+    console.log("fcmp [path1] [path2] [schema ID]\tCompare two external standard files (in YAML format) and return the diff if any");
+    console.log("fvalid [path] [schema ID]\t\tValidate an external standard file (in YAML format) against a standard schema");
+    console.log("lstd\t\t\t\t\tList all available standard schemas");
+    console.log("quit\t\t\t\t\tExit");
 }
 
 // TODO: in "the future," lstd would query some method at the data I/O layer to retrieve all the standard schemas in the currently
@@ -80,9 +83,58 @@ function _lstd() {
     console.log("ds\t\t\t\t\t\t\tCR Digital Standard Schema");
 }
 
+function _fcmp(path1, path2, id) {
+    if (!path1 || !path2) {
+        console.log("Error: missing path");
+        return;
+    }
+    
+    // Lol... since we're faking this one standard schema (ID: 'ds'), every other schema ID is currently not found
+    if (id !== "ds") {
+        console.log("Error: invalid schema ID");
+        return;
+    }
+
+    try {
+        const doca = fs.readFileSync(path1, {encoding: "utf8"});
+        const docb = fs.readFileSync(path2, {encoding: "utf8"});
+        const ymldoca = yaml.safeLoad(doca, "utf8");
+        const ymldocb = yaml.safeLoad(docb, "utf8");
+
+        const resa = v.validate(ymldoca, ds_schema.ds, {nestedErrors: true});
+        
+        if (resa.errors.length !== 0) {
+            throw new Error(`file ${path1} is not a correct instance of standard schema ${id}. Run fvalid.`);
+        }
+
+        const resb = v.validate(ymldocb, ds_schema.ds, {nestedErrors: true});
+
+        if (resb.errors.length !== 0) {
+            throw new Error(`file ${path2} is not a correct instance of standard schema ${id}. Run fvalid.`);
+        }
+        
+        const hash1 = gcutil.sha256(doca);
+        const hash2 = gcutil.sha256(docb);
+        
+        /*
+        if (hash1 === hash2) {
+            console.log(`Files are identical! SHA256: ${hash1}`);
+            return;
+        }
+        */
+        
+        const tree = Gcntree.from_json(ymldoca);
+        tree.dfs((node, data) => {
+            console.log(node.data);
+        }); 
+    } catch(err) {
+        console.log(`Error: ${err.message}`);
+    }
+}
+
 function _fvalid(path, id) {
     if (!path) {
-        console.log("Error: invalid path");
+        console.log("Error: missing path");
         return;
     }
     

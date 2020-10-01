@@ -6,11 +6,14 @@ function Gcntree({root = null} = {}) {
     this.root = root;
 }
 
-Gcntree.from_json = function(obj) {
+// trans is a transformer function to be called for every (key, val) pair that's a leaf node
+// it should return whatever you want your leaf nodes to be -- see below Gcntree.trans.to_obj
+// which just turns them into {key: val}
+Gcntree.from_json = function(obj, trans) {
     function _traverse(obj, p) {
         Object.entries(obj).forEach((entry) => {
             if (!Array.isArray(entry[1])) {
-                p.add_child(new Gcntree_node({data: entry, parent: p})); 
+                p.add_child(new Gcntree_node({data: trans(entry[0], entry[1]), parent: p})); 
                 return;
             }
             
@@ -27,6 +30,16 @@ Gcntree.from_json = function(obj) {
     return tree;
 }
 
+Gcntree.trans = {
+    to_obj: (key, val) => {
+        const obj = {};
+        obj[key] = val;
+        return obj;
+    }
+};
+
+// Depth first search (preorder traversal)
+// Calls visitation callback cb(node, data) for every node in the tree 
 Gcntree.prototype.dfs = function(cb, node = this.root, data = []) {
     cb(node, data);
 

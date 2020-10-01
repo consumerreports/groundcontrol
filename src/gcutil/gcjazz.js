@@ -2,14 +2,9 @@
 
 const yaml = require("js-yaml");
 const fs = require("fs");
-const util = require("util");
 
 const PATH = "/home/noah/work/groundcontrol/temp/TheDigitalStandard";
 const OUTPUT_PATH = "/home/noah/work/groundcontrol/temp/ds_unified.yml";
-
-function inspect(obj) {
-    return util.inspect(obj, {showHidden: false, depth: 20, colors: true, compact: 10, breakLength: 200});
-}
 
 // TODO: break complex fields out into modules
 function transformer(obj) {

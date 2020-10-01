@@ -83,6 +83,33 @@ function _lstd() {
     console.log("ds\t\t\t\t\t\t\tCR Digital Standard Schema");
 }
 
+// Compare two Gcntrees and return an array of the nodes found in tree a that were not found in tree b (node order is irrelevant)
+// TODO: this is O(a * b), right? and it's always worst case because we don't have a mechanism to terminate DFS early
+// here's a way we could beat that:  create a binary search tree of the hashes of each of the nodes in tree b -- now by hashing 
+// each node in tree a, you can check if that node is in tree b in O(h) -- maybe setup costs ain't worth it tho...
+function _tree_node_compare(a, b) {
+    const bad_nodes = [];
+
+    a.dfs((node, data) => {
+        const hasha = gcutil.sha256(JSON.stringify(node.data));
+        let found = false;
+        
+        b.dfs((node, data) => {
+            const hashb = gcutil.sha256(JSON.stringify(node.data));
+            
+            if (hasha === hashb) {
+                found = true;
+            }
+        });
+        
+        if (!found) {
+            bad_nodes.push(node.data);
+        }
+    });
+
+    return bad_nodes;
+}
+
 function _fcmp(path1, path2, id) {
     if (!path1 || !path2) {
         console.log("Error: missing path");
@@ -116,17 +143,41 @@ function _fcmp(path1, path2, id) {
         const hash1 = gcutil.sha256(doca);
         const hash2 = gcutil.sha256(docb);
         
-        /*
         if (hash1 === hash2) {
             console.log(`Files are identical! SHA256: ${hash1}`);
             return;
         }
-        */
+       
+        const doca_tree = Gcntree.from_json(ymldoca, Gcntree.trans.to_obj);
+        const docb_tree = Gcntree.from_json(ymldocb, Gcntree.trans.to_obj);
         
-        const tree = Gcntree.from_json(ymldoca);
-        tree.dfs((node, data) => {
-            console.log(node.data);
-        }); 
+        // This is asymptotically stupid -- we can write a much more optimal algorithm that compares both trees simultaneously
+        const bada = _tree_node_compare(doca_tree, docb_tree);
+        const badb = _tree_node_compare(docb_tree, doca_tree);
+        
+        // It's currently assumed that the order of procedures is irrelevant -- that is, every test is a discrete
+        // action that can be performed before or after any other test. Accordingly, the sequence of tests belonging
+        // to a standard can be permuted without having any effect on their results -- so even in the rare case that
+        // a procedure is reassigned under a different indicator, it shouldn't be considered a "change" in the test suite.
+        // This assumption informs the design of fcmp: to minimize noise, we only tell the user which nodes are disjoint.
+        // If two trees are sequential permutations of an identical set of nodes, we alert the user but show no diff.
+        // TODO: We may discover through use that this is not desirable; users may more often want to see when and how parts of
+        // a standard have been rearranged, if not actually edited for content.
+        
+        if (bada.length === 0 && badb.length === 0) {
+            console.log(`Permutation: file ${path1} has the same nodes as file ${path2}, but in a different order.`);
+            return;
+        }
+
+        bada.forEach((node) => {
+            console.log(`File ${path2} did not have this node:`);
+            console.log(node);
+        });
+
+        badb.forEach((node) => {
+            console.log(`File ${path1} did not have this node:`);
+            console.log(node);
+        });
     } catch(err) {
         console.log(`Error: ${err.message}`);
     }

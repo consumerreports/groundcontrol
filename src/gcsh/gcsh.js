@@ -175,7 +175,7 @@ function _fcmp(path1, path2, id) {
         });
 
         badb.forEach((node) => {
-            console.log(`File ${path1} did not have this node:`);
+            console.log(`\nFile ${path1} did not have this node:`);
             console.log(node);
         });
     } catch(err) {

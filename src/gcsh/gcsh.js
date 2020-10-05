@@ -34,7 +34,8 @@ const GRAMMAR = new Map([
     ["help", _help],
     ["lstd", _lstd],
     ["fvalid", _fvalid],
-    ["fcmp", _fcmp]
+    ["fcmp", _fcmp],
+    ["debug", _debug] // TODO: delete me, the _debug stub is for testing only 
 ]);
 
 async function _on_input(input) {
@@ -51,6 +52,20 @@ async function _on_input(input) {
 	} catch (err) {
 		console.log(`Fatal error ${err}`);
 	}
+}
+
+function _debug(path) {
+        const doc = fs.readFileSync(path, {encoding: "utf8"});
+        const ymldoc = yaml.safeLoad(doc, "utf8");
+        
+        const doc_tree = Gcntree.from_json_doc(ymldoc, Gcntree.trans.to_obj);
+
+        const json = doc_tree.toJSON();
+        console.log(gcutil.sha256(json));
+
+        const rehydrated = Gcntree.from_json(json);
+        const rjson = rehydrated.toJSON();
+        console.log(gcutil.sha256(rjson));
 }
 
 function _quit() {
@@ -140,17 +155,17 @@ function _fcmp(path1, path2, id) {
             throw new Error(`file ${path2} is not a correct instance of standard schema ${id}. Run fvalid.`);
         }
         
-        const hash1 = gcutil.sha256(doca);
-        const hash2 = gcutil.sha256(docb);
-        
-        if (hash1 === hash2) {
+        const doca_tree = Gcntree.from_json_doc(ymldoca, Gcntree.trans.to_obj);
+        const docb_tree = Gcntree.from_json_doc(ymldocb, Gcntree.trans.to_obj);
+            
+        const hash1 = gcutil.sha256(JSON.stringify(doca_tree));
+        const hash2 = gcutil.sha256(JSON.stringify(docb_tree));
+
+         if (hash1 === hash2) {
             console.log(`Files are identical! SHA256: ${hash1}`);
             return;
         }
        
-        const doca_tree = Gcntree.from_json(ymldoca, Gcntree.trans.to_obj);
-        const docb_tree = Gcntree.from_json(ymldocb, Gcntree.trans.to_obj);
-        
         // This is asymptotically stupid -- we can write a much more optimal algorithm that compares both trees simultaneously
         const bada = _tree_node_compare(doca_tree, docb_tree);
         const badb = _tree_node_compare(docb_tree, doca_tree);

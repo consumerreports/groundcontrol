@@ -16,6 +16,7 @@ const ds_schema = require("../../temp/schemas/ds.js");
 
 const gcutil = require("../gcutil/gcutil.js");
 const Gcntree = require("../gctypes/gcntree/gcntree.js");
+const Gceval = require("../gcstd/gceval.js");
 
 const v = new Validator();
 
@@ -32,11 +33,20 @@ const GRAMMAR = new Map([
     ["quit", _quit],
     ["clear", _clear],
     ["help", _help],
-    ["lstd", _lstd],
+    ["leval", _leval],
+    ["lsch", _lsch],
     ["fvalid", _fvalid],
     ["fcmp", _fcmp],
-    ["debug", _debug] // TODO: delete me, the _debug stub is for testing only 
+    ["procs", _procs],
+    ["whatset", _whatset]
 ]);
+
+// TODO: delete me
+// here we're just making some Gceval objects in the global scope that we can use to simulate having some in a data store
+const doc = fs.readFileSync("../../temp/ds_unified.yml", {encoding: "utf8"});
+const ymldoc = yaml.safeLoad(doc, "utf8");
+const doc_tree = Gcntree.from_json_doc(ymldoc, Gcntree.trans.to_obj);
+const data_security_eval = new Gceval({std: doc_tree, nums: [44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59]});
 
 async function _on_input(input) {
 	const tok = input.trim().split(" ");
@@ -54,18 +64,29 @@ async function _on_input(input) {
 	}
 }
 
-function _debug(path) {
+// Enumerate the procedures for a given standard and display the result
+// these numbers are what you'll want to reference when creating a Gceval object
+function _procs(path) {
+    try {
         const doc = fs.readFileSync(path, {encoding: "utf8"});
         const ymldoc = yaml.safeLoad(doc, "utf8");
-        
         const doc_tree = Gcntree.from_json_doc(ymldoc, Gcntree.trans.to_obj);
-
-        const json = doc_tree.toJSON();
-        console.log(gcutil.sha256(json));
-
-        const rehydrated = Gcntree.from_json(json);
-        const rjson = rehydrated.toJSON();
-        console.log(gcutil.sha256(rjson));
+    
+        let num = 0
+        
+        // TODO: this is a brittle and bad way to determine whether a node is a procedure
+        // we should prob introduce a thin wrapper class for nodes with an enum for types
+        doc_tree.dfs((node, data) => {
+            if (node.parent && node.parent.data === "procedures") {
+                console.log(num);
+                console.log(node.data);
+                console.log();
+                num += 1;
+            }
+        });
+    } catch(err) {
+        console.log(`Error: ${err.message}`);
+    }
 }
 
 function _quit() {
@@ -84,16 +105,26 @@ function _help() {
     console.log("| gsch help |");
     console.log("+-----------+\n");
     console.log("COMMAND\t\t\t\t\tRESULT");
-    console.log("clear\t\t\t\t\tClear screen"); 
-    console.log("fcmp [path1] [path2] [schema ID]\tCompare two external standard files (in YAML format) and return the diff if any");
-    console.log("fvalid [path] [schema ID]\t\tValidate an external standard file (in YAML format) against a standard schema");
-    console.log("lstd\t\t\t\t\tList all available standard schemas");
-    console.log("quit\t\t\t\t\tExit");
+    console.log("clear\t\t\t\t\tClear screen\n"); 
+    console.log("fcmp [path1] [path2] [schema ID]\tCompare two external standard files (in YAML format) and return the diff if any\n");
+    console.log("fvalid [path] [schema ID]\t\tValidate an external standard file (in YAML format) against a standard schema\n");
+    console.log("leval\t\t\t\t\tList all available evaluation sets\n");
+    console.log("lsch\t\t\t\t\tList all available standard schemas\n");
+    console.log("procs\t\t\t\t\tDisplay the procedure numbers for an external standard file (in YAML format)\n");
+    console.log("quit\t\t\t\t\tExit\n");
+    console.log("whatset [path] [eval ID]\t\tShow procedures for a given evaluation set and external standard file (in YAML format)");
 }
 
-// TODO: in "the future," lstd would query some method at the data I/O layer to retrieve all the standard schemas in the currently
+// TODO: in "the future," leval would grab all the evaluation sets in the currently defined data store... for now, we're just
+// faking some by creating some Gceval objects in the global scope
+function _leval() {
+    console.log("ID\t\t\t\t\t\t\tNAME");
+    console.log("datasec\t\t\t\t\t\t\tData Security");
+}
+
+// TODO: in "the future," lsch would query some method at the data I/O layer to retrieve all the standard schemas in the currently
 // defined data store... for this demo, we're faking a world where there's one standard schema in the data store and its ID is 'ds'
-function _lstd() {
+function _lsch() {
     console.log("ID\t\t\t\t\t\t\tNAME");
     console.log("ds\t\t\t\t\t\t\tCR Digital Standard Schema");
 }
@@ -225,6 +256,10 @@ function _fvalid(path, id) {
     } catch(err) {
         console.log(`Error: ${err.message}`);
     }
+}
+
+function _whatset() {
+
 }
 
 const rl = readline.createInterface({

@@ -14,7 +14,7 @@ function Gceval({std = null, nums = []} = {}) {
         throw new Error("Argument 'std' must be a Gcntree");
     }
 
-    this.set = [];
+    this.set = new Set();
     const tree_data = new Map();
     let n = 0;
     
@@ -32,8 +32,8 @@ function Gceval({std = null, nums = []} = {}) {
         if (!data) {
             throw new Error(`Node number ${num} invalid or out of range`);
         }
-
-        this.set.push(gcutil.sha256(JSON.stringify(data)));
+            
+        this.set.add(gcutil.sha256(JSON.stringify(data)));
     });
 }
 

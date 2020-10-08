@@ -106,7 +106,7 @@ function _help() {
     console.log("+-----------+\n");
     console.log("COMMAND\t\t\t\t\tRESULT");
     console.log("clear\t\t\t\t\tClear screen\n"); 
-    console.log("fcmp [path1] [path2] [schema ID]\tCompare two external standard files (in YAML format) and return the diff if any\n");
+    console.log("fcmp [path1] [path2] [schema ID]\tCompare two external standard files (in YAML format) and display the diff if any\n");
     console.log("fvalid [path] [schema ID]\t\tValidate an external standard file (in YAML format) against a standard schema\n");
     console.log("leval\t\t\t\t\tList all available evaluation sets\n");
     console.log("lsch\t\t\t\t\tList all available standard schemas\n");
@@ -258,8 +258,52 @@ function _fvalid(path, id) {
     }
 }
 
-function _whatset() {
+function _whatset(path, id) {
+    if (!path) {
+        console.log("Error: missing path");
+        return;
+    }
 
+    // Lol, we're faking this one evaluation set, so every other evaluation set ID is currently not found
+    if (id !== "datasec") {
+        console.log("Error: invalid evaluation set ID");
+        return;
+    }
+    
+    // TODO: the data_security_eval object is defined in the global scope for demo purposes,
+    // it's the Gceval object we imagine being associated with the ID 'datasec'
+    const ev = data_security_eval;
+    
+    try {
+        const doc = fs.readFileSync(path, {encoding: "utf8"});
+        const doctree = Gcntree.from_json_doc(yaml.safeLoad(doc, "utf8"), Gcntree.trans.to_obj);
+        
+        const procs = new Set();
+        let n = 0;
+
+        doctree.dfs((node, data) => {
+            if (ev.set.has(gcutil.sha256(JSON.stringify(node.data)))) {
+                procs.add(node.data);
+            }
+            
+            // TODO: we really need a thin wrapper class for nodes to stop doing this...
+            if (node.parent && node.parent.data === "procedures") {
+                n += 1;     
+            }
+        });
+        
+        if (procs.size !== ev.set.size) {
+            throw new Error(`Evaluation set ${id} is a mismatch for ${path}`); 
+        }
+        
+        console.log(`${id} selects ${procs.size} of ${n} procedures in ${path}:\n`);
+        
+        Array.from(procs.values()).forEach((proc) => {
+            console.log(proc);
+        });
+    } catch(err) {
+        console.log(`Error: ${err.message}`);
+    }
 }
 
 const rl = readline.createInterface({

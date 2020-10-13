@@ -21,6 +21,19 @@ to certain standards, which, you know, is probably why we called it the digital 
 
 - ~~for split schemas, how do we get jsonschema to pass recursively nested errors down the stack?~~
 
+***A BIG DEVIATION FROM OUR CURRENT SYSTEM TO THINK ABOUT***
+In the current reality, products are defined solely by the parts of the digital standard that apply to them.  In other words:  When a new widget appears, we define what a widget is – and what consumers need to worry about when it comes to widgets – by opening up the digital standard and looking at each indicator, and thinking:  Is there any way in which this indicator applies to a widget?  
+
+This is a bit weird, because a healthy way of modeling a problem usually entails defining each entity on its own terms:  i.e., define a widget by the COMPONENTS of a widget – that way, even in the absence of the digital standard, we still have some unit of data to refer to that describes what a widget is. 
+
+Accordingly, our current approach is likely to give us a lot of painful problems.  For example:  If a widget is defined in part by indicator 76, what happens if, over time, the community decides that indicator 76 should no longer be part of the digital standard – and that it should be replaced by two newer indicators which better explore the criteria?  When indicator 76 is deleted, maybe there are 100 different products that are defined in part by indicator 76.  To bring the system up to date, someone will need to find and edit each of the 100 products and replace indicator 76 with the two newer indicators.
+
+A better design would decouple the digital standard from the products themselves.  In other words: if products had a modular system of attributes, and we could associate parts of the digital standard with attributes – it would mean that we could make arbitrary changes to the digital standard without needing to make changes to every single product that it affects.
+
+For example:  If there is a “WiFi Module” attribute that we assign to every product that has a WiFi module – and indicator 76 is assigned to the WiFi Module attribute – then when the community deletes indicator 76 from the digital standard, and replaces it with two newer indicators – someone must only update the WiFi Module attribute to link the two new indicators, and all of the products in the system are automatically up to date.  
+
+In this system, when a new widget appears, we would define the widget by its attributes – i.e., a WiFi module, an optical disk drive, a password-based authentication system, etc.  At test time, a product’s attributes provide the links back to the parts of the digital standard that will be applied.
+
 ***SCHEMA FOR A STANDARD***
 
 a STANDARD node consists of:

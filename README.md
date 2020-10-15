@@ -1,5 +1,7 @@
 ***TODO***
 
+- go through all the TODOs. there are a lot!
+
 - we prob want support for an arbitrary number of user-defined schemas. we might define a ruleset called "the digital standard" and create a schema for it and serialize it to disk... but another org might use ground control to manage testing for their custom fork of the digital standard, "the better digital standard," which actually adds some new fields and structures indicators differently -- so they need to be able to define a schema for "the better digital standard" and load it at runtime...
 
 - might want to write an abstraction layer for jsonschema

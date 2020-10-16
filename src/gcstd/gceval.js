@@ -1,5 +1,6 @@
 "use strict";
 
+const gc = require("../gcutil/gcconfig.js");
 const gcutil = require("../gcutil/gcutil.js");
 const Gcntree = require("../gctypes/gcntree/gcntree.js");
 
@@ -33,7 +34,7 @@ function Gceval({std = null, nums = []} = {}) {
             throw new Error(`Node number ${num} invalid or out of range`);
         }
             
-        this.set.add(gcutil.sha256(JSON.stringify(data)));
+        this.set.add(gc.DEFAULT_HASH(data));
     });
 }
 

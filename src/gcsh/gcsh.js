@@ -14,6 +14,7 @@ const fs = require("fs");
 const Validator = require("jsonschema").Validator;
 const ds_schema = require("../../temp/schemas/ds.js");
 
+const gc = require("../gcutil/gcconfig.js");
 const gcutil = require("../gcutil/gcutil.js");
 const Gcntree = require("../gctypes/gcntree/gcntree.js");
 const Gceval = require("../gcstd/gceval.js");
@@ -110,7 +111,7 @@ function _help() {
     console.log("fvalid [path] [schema ID]\t\tValidate an external standard file (in YAML format) against a standard schema\n");
     console.log("leval\t\t\t\t\tList all available evaluation sets\n");
     console.log("lsch\t\t\t\t\tList all available standard schemas\n");
-    console.log("procs\t\t\t\t\tDisplay the procedure numbers for an external standard file (in YAML format)\n");
+    console.log("procs [path]\t\t\t\tDisplay the procedure numbers for an external standard file (in YAML format)\n");
     console.log("quit\t\t\t\t\tExit\n");
     console.log("whatset [path] [eval ID]\t\tShow procedures for a given evaluation set and external standard file (in YAML format)");
 }
@@ -137,11 +138,11 @@ function _tree_node_compare(a, b) {
     const bad_nodes = [];
 
     a.dfs((node, data) => {
-        const hasha = gcutil.sha256(JSON.stringify(node.data));
+        const hasha = gc.DEFAULT_HASH(node.data);
         let found = false;
         
         b.dfs((node, data) => {
-            const hashb = gcutil.sha256(JSON.stringify(node.data));
+            const hashb = gc.DEFAULT_HASH(node.data);
             
             if (hasha === hashb) {
                 found = true;
@@ -189,8 +190,8 @@ function _fcmp(path1, path2, id) {
         const doca_tree = Gcntree.from_json_doc(ymldoca, Gcntree.trans.to_obj);
         const docb_tree = Gcntree.from_json_doc(ymldocb, Gcntree.trans.to_obj);
             
-        const hash1 = gcutil.sha256(JSON.stringify(doca_tree));
-        const hash2 = gcutil.sha256(JSON.stringify(docb_tree));
+        const hash1 = gc.DEFAULT_HASH(doca_tree);
+        const hash2 = gc.DEFAULT_HASH(docb_tree);
 
          if (hash1 === hash2) {
             console.log(`Files are identical! SHA256: ${hash1}`);
@@ -282,7 +283,7 @@ function _whatset(path, id) {
         let n = 0;
 
         doctree.dfs((node, data) => {
-            if (ev.set.has(gcutil.sha256(JSON.stringify(node.data)))) {
+            if (ev.set.has(gc.DEFAULT_HASH(node.data))) {
                 procs.add(node.data);
             }
             

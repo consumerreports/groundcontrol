@@ -34,11 +34,13 @@ const GRAMMAR = new Map([
     ["quit", _quit],
     ["clear", _clear],
     ["help", _help],
+    ["inds", _inds],
     ["leval", _leval],
+    ["lent", _lent],
     ["lsch", _lsch],
+    ["lstd", _lstd],
     ["fvalid", _fvalid],
     ["fcmp", _fcmp],
-    ["procs", _procs],
     ["whatset", _whatset]
 ]);
 
@@ -47,7 +49,7 @@ const GRAMMAR = new Map([
 const doc = fs.readFileSync("../../temp/ds_unified.yml", {encoding: "utf8"});
 const ymldoc = yaml.safeLoad(doc, "utf8");
 const doc_tree = Gcntree.from_json_doc(ymldoc, Gcntree.trans.to_obj);
-const data_security_eval = new Gceval({std: doc_tree, nums: [44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59]});
+const data_security_eval = new Gceval({std: doc_tree, nums: [43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57]});
 
 async function _on_input(input) {
 	const tok = input.trim().split(" ");
@@ -65,9 +67,9 @@ async function _on_input(input) {
 	}
 }
 
-// Enumerate the procedures for a given standard and display the result
+// Enumerate the indicators for a given standard and display the result
 // these numbers are what you'll want to reference when creating a Gceval object
-function _procs(path) {
+function _inds(path) {
     try {
         const doc = fs.readFileSync(path, {encoding: "utf8"});
         const ymldoc = yaml.safeLoad(doc, "utf8");
@@ -75,10 +77,10 @@ function _procs(path) {
     
         let num = 0
         
-        // TODO: this is a brittle and bad way to determine whether a node is a procedure
+        // TODO: this is a brittle and bad way to determine whether a node is an indicator
         // we should prob introduce a thin wrapper class for nodes with an enum for types
         doc_tree.dfs((node, data) => {
-            if (node.parent && node.parent.data === "procedures") {
+            if (node.parent && node.parent.data === "indicators" && node.data !== "procedures") {
                 console.log(num);
                 console.log(node.data);
                 console.log();
@@ -108,12 +110,14 @@ function _help() {
     console.log("COMMAND\t\t\t\t\tRESULT");
     console.log("clear\t\t\t\t\tClear screen\n"); 
     console.log("fcmp [path1] [path2] [schema ID]\tCompare two external standard files (in YAML format) and display the diff if any\n");
-    console.log("fvalid [path] [schema ID]\t\tValidate an external standard file (in YAML format) against a standard schema\n");
+    console.log("fvalid [path] [schema ID]\t\tValidate an external standard file (in YAML format) against a standard schema\n"); 
+    console.log("inds [path]\t\t\t\tDisplay the indicator numbers for an external standard file (in YAML format)\n");
     console.log("leval\t\t\t\t\tList all available evaluation sets\n");
+    console.log("lent\t\t\t\t\tList all available testable entities\n");
     console.log("lsch\t\t\t\t\tList all available standard schemas\n");
-    console.log("procs [path]\t\t\t\tDisplay the procedure numbers for an external standard file (in YAML format)\n");
+    console.log("lstd\t\t\t\t\tList all available standards\n");
     console.log("quit\t\t\t\t\tExit\n");
-    console.log("whatset [path] [eval ID]\t\tShow procedures for a given evaluation set and external standard file (in YAML format)");
+    console.log("whatset [path] [eval ID]\t\tShow indicators for a given evaluation set and external standard file (in YAML format)");
 }
 
 // TODO: in "the future," leval would grab all the evaluation sets in the currently defined data store... for now, we're just
@@ -123,6 +127,10 @@ function _leval() {
     console.log("datasec\t\t\t\t\t\t\tData Security");
 }
 
+function _lent() {
+    console.log("Oops! I don't do anything yet. Email noah.levenson@consumer.org about this!");
+}
+
 // TODO: in "the future," lsch would query some method at the data I/O layer to retrieve all the standard schemas in the currently
 // defined data store... for this demo, we're faking a world where there's one standard schema in the data store and its ID is 'ds'
 function _lsch() {
@@ -130,6 +138,9 @@ function _lsch() {
     console.log("ds\t\t\t\t\t\t\tCR Digital Standard Schema");
 }
 
+function _lstd() {
+    console.log("Oops! I don't do anything yet. Email noah.levenson@consumer.org about this!");
+}
 // Compare two Gcntrees and return an array of the nodes found in tree a that were not found in tree b (node order is irrelevant)
 // TODO: this is O(a * b), right? and it's always worst case because we don't have a mechanism to terminate DFS early
 // here's a way we could beat that:  create a binary search tree of the hashes of each of the nodes in tree b -- now by hashing 
@@ -288,7 +299,7 @@ function _whatset(path, id) {
             }
             
             // TODO: we really need a thin wrapper class for nodes to stop doing this...
-            if (node.parent && node.parent.data === "procedures") {
+            if (node.parent && node.parent.data === "indicators" && node.data !== "procedures") {
                 n += 1;     
             }
         });

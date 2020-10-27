@@ -16,6 +16,7 @@ const ds_schema = require("../../temp/schemas/ds.js");
 
 const gc = require("../gcutil/gcconfig.js");
 const gcutil = require("../gcutil/gcutil.js");
+const gcstd = require("../gcstd/gcstd.js");
 const Gcntree = require("../gctypes/gcntree/gcntree.js");
 const Gceval = require("../gcstd/gceval.js");
 
@@ -33,15 +34,17 @@ const PROMPT = "gcsh > ";
 const GRAMMAR = new Map([
     ["quit", _quit],
     ["clear", _clear],
+    ["fnum", _fnum],
     ["help", _help],
-    ["inds", _inds],
     ["leval", _leval],
     ["lent", _lent],
     ["lsch", _lsch],
     ["lstd", _lstd],
     ["fvalid", _fvalid],
     ["fcmp", _fcmp],
-    ["whatset", _whatset]
+    ["parts", _parts],
+    ["whatset", _whatset],
+    ["debug", _debug] // TODO: Delete me!
 ]);
 
 // TODO: delete me
@@ -67,27 +70,86 @@ async function _on_input(input) {
 	}
 }
 
-// Enumerate the indicators for a given standard and display the result
-// these numbers are what you'll want to reference when creating a Gceval object
-function _inds(path) {
+// TODO: delete me!
+function _debug() {
+    const keys = gcstd.get_nonscalar_keys(ds_schema);
+    console.log(keys);
+}
+
+// Display the meaningful parts of a given standard schema. These are the parts you reference for fnum, and eventually
+// when creating a Gceval object...
+function _parts(id) {
+    // Lol... since we're faking this one standard schema (ID: 'ds'), every other schema ID is currently not found
+    if (id !== "ds") {
+        console.log("Error: invalid schema ID");
+        return;
+    }
+    
+    // TODO: to avoid presenting the user with every single part of a standard schema, we  hypothesize that the 
+    // "meaningful" parts of a standard schema are its nonscalar values, see get_nonscalar_keys for a deeper discussion
+    const keys = gcstd.get_nonscalar_keys(ds_schema);
+    
+    if (keys.length === 0) {
+        console.log("No meaningful parts found!");
+        return;
+    }
+    
+    keys.forEach((key, i) => {
+        console.log(`${i}: ${key}`);
+    });
+}
+
+// Display the enumerations for only part of an external standard file, where the part is defined using the method in
+// the 'parts' command
+function _fnum(path, sch_id, part_id) {
+    if (!path) {
+        console.log("Error: missing path");
+        return;
+    }
+    
+    // Lol... since we're faking this one standard schema (ID: 'ds'), every other schema ID is currently not found
+    if (sch_id !== "ds") {
+        console.log("Error: invalid schema ID");
+        return;
+    }
+    
     try {
+        // First get the prop name for the part code we're interested in
+        const keys = gcstd.get_nonscalar_keys(ds_schema);
+        
+        if (part_id < 0 || part_id > keys.length - 1) {
+            throw new Error(`Part ID out of range for standard schema ${sch_id}`);
+        }
+
+        const prop = keys[part_id];
+
+        // Now load the standard file and transform to a Gcntree
         const doc = fs.readFileSync(path, {encoding: "utf8"});
         const ymldoc = yaml.safeLoad(doc, "utf8");
         const doc_tree = Gcntree.from_json_doc(ymldoc, Gcntree.trans.to_obj);
-    
-        let num = 0
         
-        // TODO: this is a brittle and bad way to determine whether a node is an indicator
-        // we should prob introduce a thin wrapper class for nodes with an enum for types
+        // TODO: we've decided that a standard's nodes are canonically enumerated using DFS preorder traversal
+        // we should prob wrap this in an API layer function like gcapp.enumerate_nodes()
+        let tnodes = 0;
+        let snodes = 0;
+        
         doc_tree.dfs((node, data) => {
-            if (node.parent && node.parent.data === "indicators" && node.data !== "procedures") {
-                console.log(num);
+            // TODO: this is a brittle and bad way to discern between different kinds of nodes
+            // We really need a wrapper class for nodes which lets them reflect their type,
+            // and the set of node types is determined by the standard schema (that means that
+            // we need a higher order function for constructing a Gcntree from a ymldoc AND a standard schema)
+            if (node.parent && node.parent.data === prop && typeof node.data !== "string") {
+                console.log(tnodes);
                 console.log(node.data);
                 console.log();
-                num += 1;
+                snodes += 1;
             }
+
+            tnodes += 1;
         });
-    } catch(err) {
+
+        console.log(`Done! ${path} has ${snodes} '${prop}' (part ID ${part_id}) out of ${tnodes} total nodes.`);
+    } catch (err) {
         console.log(`Error: ${err.message}`);
     }
 }
@@ -109,13 +171,14 @@ function _help() {
     console.log("+-----------+\n");
     console.log("COMMAND\t\t\t\t\tRESULT");
     console.log("clear\t\t\t\t\tClear screen\n"); 
+    console.log("fnum [path] [schema ID] [part ID]\tShow the enumerations for part of an external standard file (in YAML format)\n")
     console.log("fcmp [path1] [path2] [schema ID]\tCompare two external standard files (in YAML format) and display the diff if any\n");
     console.log("fvalid [path] [schema ID]\t\tValidate an external standard file (in YAML format) against a standard schema\n"); 
-    console.log("inds [path]\t\t\t\tDisplay the indicator numbers for an external standard file (in YAML format)\n");
     console.log("leval\t\t\t\t\tList all available evaluation sets\n");
     console.log("lent\t\t\t\t\tList all available testable entities\n");
     console.log("lsch\t\t\t\t\tList all available standard schemas\n");
     console.log("lstd\t\t\t\t\tList all available standards\n");
+    console.log("parts [schema ID]\t\t\tDisplay the meaningful parts of a given standard schema\n");
     console.log("quit\t\t\t\t\tExit\n");
     console.log("whatset [path] [eval ID]\t\tShow indicators for a given evaluation set and external standard file (in YAML format)");
 }

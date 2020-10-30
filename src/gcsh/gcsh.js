@@ -49,10 +49,10 @@ const GRAMMAR = new Map([
 
 // TODO: delete me
 // here we're just making some Gceval objects in the global scope that we can use to simulate having some in a data store
-const doc = fs.readFileSync("../../temp/ds_unified.yml", {encoding: "utf8"});
+const doc = fs.readFileSync("../../temp/ds_103020.yml", {encoding: "utf8"});
 const ymldoc = yaml.safeLoad(doc, "utf8");
 const doc_tree = Gcntree.from_json_doc(ymldoc, Gcntree.trans.to_obj);
-const data_security_eval = new Gceval({std: doc_tree, nums: [43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57]});
+const data_security_eval = new Gceval({std: doc_tree, nums: [333, 336, 339, 342, 345, 348, 352, 355, 358, 361, 364, 369, 372, 375, 378, 386, 394, 404, 412, 415, 418, 421, 424, 427, 435]});
 
 async function _on_input(input) {
 	const tok = input.trim().split(" ");
@@ -72,8 +72,26 @@ async function _on_input(input) {
 
 // TODO: delete me!
 function _debug() {
-    const keys = gcstd.get_nonscalar_keys(ds_schema);
-    console.log(keys);
+    const doc = fs.readFileSync("/home/noah/work/groundcontrol/temp/ds_unified.yml", {encoding: "utf8"});
+    const ymldoc = yaml.safeLoad(doc, "utf8");
+    const doc_tree = Gcntree.from_json_doc(ymldoc, Gcntree.trans.to_obj);
+    
+    
+
+    let n = 0;
+
+    doc_tree.dfs((node, data) => {
+        if (n === 445) {
+            while (node !== null) {
+                console.log(gcutil.inspect(node), 100);
+                node = node.parent;
+            }
+        }
+
+        n += 1;
+    });
+
+    
 }
 
 // Display the meaningful parts of a given standard schema. These are the parts you reference for fnum, and eventually
@@ -139,9 +157,29 @@ function _fnum(path, sch_id, part_id) {
             // and the set of node types is determined by the standard schema (that means that
             // we need a higher order function for constructing a Gcntree from a ymldoc AND a standard schema)
             if (node.parent && node.parent.data === prop && typeof node.data !== "string") {
+                const path = [];
+                let pnode = node.parent;
+
+                while (pnode !== null) {
+                    if (pnode.parent && keys.includes(pnode.parent.data)) {
+                        path.push(pnode.data);
+                    }
+
+                    pnode = pnode.parent;
+                }
+                
+                // TODO: we make a gross assumption that all the node.data we've collected will be formatted
+                // as an object as specified by Gcntree.trans.to_obj -- this is brittle and bad. This can be
+                // eliminated if we implement a wrapper class for Gcntree node data...
+                let pathstr = "VIA: ";
+
+                path.reverse().forEach((hop) => {
+                    pathstr += `${Object.values(hop)[0]} / `;
+                });
+                
                 console.log(tnodes);
                 console.log(node.data);
-                console.log();
+                console.log(`${pathstr.substr(0, pathstr.length - 2)}\n\n`);
                 snodes += 1;
             }
 
@@ -180,7 +218,7 @@ function _help() {
     console.log("lstd\t\t\t\t\tList all available standards\n");
     console.log("parts [schema ID]\t\t\tDisplay the meaningful parts of a given standard schema\n");
     console.log("quit\t\t\t\t\tExit\n");
-    console.log("whatset [path] [eval ID]\t\tShow indicators for a given evaluation set and external standard file (in YAML format)");
+    console.log("whatset [path] [eval ID]\t\tShow what set of parts applies for a given evaluation set and external standard file (in YAML format)");
 }
 
 // TODO: in "the future," leval would grab all the evaluation sets in the currently defined data store... for now, we're just
@@ -353,29 +391,34 @@ function _whatset(path, id) {
         const doc = fs.readFileSync(path, {encoding: "utf8"});
         const doctree = Gcntree.from_json_doc(yaml.safeLoad(doc, "utf8"), Gcntree.trans.to_obj);
         
-        const procs = new Set();
+        const parts = new Set();
         let n = 0;
 
         doctree.dfs((node, data) => {
             if (ev.set.has(gc.DEFAULT_HASH(node.data))) {
-                procs.add(node.data);
+                parts.add(node.data);
             }
-            
-            // TODO: we really need a thin wrapper class for nodes to stop doing this...
-            if (node.parent && node.parent.data === "indicators" && node.data !== "procedures") {
-                n += 1;     
-            }
+
+            n += 1
         });
         
-        if (procs.size !== ev.set.size) {
+        if (parts.size !== ev.set.size) {
             throw new Error(`Evaluation set ${id} is a mismatch for ${path}`); 
         }
-        
-        console.log(`${id} selects ${procs.size} of ${n} procedures in ${path}:\n`);
-        
-        Array.from(procs.values()).forEach((proc) => {
-            console.log(proc);
+            
+        const homogeneous = Array.from(parts.values()).every((obj, i, arr) => {
+            return Object.keys(obj)[0] === Object.keys(arr[0])[0]
         });
+        
+        if (!homogeneous) {
+            throw new Error(`Illegal evaluation set -- ${id} is non-homogeneous`);
+        }
+
+        Array.from(parts.values()).forEach((part) => {
+            console.log(part);
+        });
+        
+        console.log(`${id} selects ${parts.size} of ${n} total nodes in ${path}`);
     } catch(err) {
         console.log(`Error: ${err.message}`);
     }

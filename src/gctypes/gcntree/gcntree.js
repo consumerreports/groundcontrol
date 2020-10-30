@@ -8,27 +8,28 @@ function Gcntree({root = null} = {}) {
 
 // Construct a Gcntree from a "json doc," which is the JSON representation of a YAML document
 // not to be confused with from_json() below
-// trans is a transformer function to be called for every (key, val) pair that's a leaf node
-// it should return whatever you want your leaf nodes to be -- see below Gcntree.trans.to_obj
-// which just turns them into {key: val}
+// explain trans
 Gcntree.from_json_doc = function(obj, trans) {
-    function _traverse(obj, p) {
-        Object.entries(obj).forEach((entry) => {
-            if (!Array.isArray(entry[1])) {
-                p.add_child(new Gcntree_node({data: trans(entry[0], entry[1]), parent: p})); 
-                return;
-            }
-            
-            const new_p = p.add_child(new Gcntree_node({data: entry[0], parent: p}));
+    function _process_obj(obj, ptr) {
+        const keyvals = Object.entries(obj);
 
-            entry[1].forEach((elem) => {
-                _traverse(elem, new_p);
-            });
+        ptr = ptr.add_child(new Gcntree_node({data: trans(keyvals[0][0], keyvals[0][1]), parent: ptr}));
+        
+        keyvals.slice(1).forEach((keyval) => {
+            if (!Array.isArray(keyval[1])) {
+                ptr = ptr.add_child(new Gcntree_node({data: trans(keyval[0], keyval[1]), parent: ptr}));
+            } else {
+                const new_ptr = ptr.add_child(new Gcntree_node({data: keyval[0], parent: ptr}));
+                
+                keyval[1].forEach((elem) => {
+                    _process_obj(elem, new_ptr);
+                });
+            }
         });
     }
-    
+
     const tree = new Gcntree({root: new Gcntree_node()});
-    _traverse(obj, tree.root);
+    _process_obj(obj, tree.root);
     return tree;
 }
 

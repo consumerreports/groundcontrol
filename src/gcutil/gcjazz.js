@@ -4,22 +4,22 @@ const yaml = require("js-yaml");
 const fs = require("fs");
 
 const PATH = "/home/noah/work/groundcontrol/temp/TheDigitalStandard";
-const OUTPUT_PATH = "/home/noah/work/groundcontrol/temp/ds_unified.yml";
+const OUTPUT_PATH = "/home/noah/work/groundcontrol/temp/ds_103020.yml";
 
 // TODO: break complex fields out into modules
 function transformer(obj) {
     return {
-        "name": obj.testName,
+        "evaluation": obj.testName,
         "readinessFlag": parseInt(obj.readinessFlag),
         "criterias": obj.criterias.map((criteria) => {
             return { 
-                "name": criteria.criteriaName,
+                "criteria": criteria.criteriaName,
                 "indicators": criteria.indicators.map((indicator) => {
                     return {
-                        "name": indicator.indicator,
+                        "indicator": indicator.indicator,
                         "procedures": indicator.procedures.map((procedure) => {
                             return {
-                                "desc": procedure 
+                                "procedure": procedure 
                             };
                         })
                     };
@@ -53,12 +53,12 @@ function traverse(path, obj_ptr) {
 
 function add_label(name, obj_ptr) {
     const label = {
-        name: name,
-        children: []
+        label: name,
+        categories: []
     };
     
     obj_ptr.push(label);
-    return label.children; 
+    return label.categories; 
 }
 
 function parse(path, obj_ptr) {
@@ -71,7 +71,7 @@ function parse(path, obj_ptr) {
 }
 
 const output = {
-    name: "My Unified Digital Standard",
+    digital_standard: "My Unified Digital Standard",
     labels: []
 };
 

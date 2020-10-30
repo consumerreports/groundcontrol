@@ -9,8 +9,8 @@ function sha256(data) {
     return hash.digest("hex");
 }
 
-function inspect(obj, depth) {
-    return util.inspect(obj, {showHidden: false, depth: depth, colors: true, compact: 10, breakLength: 200});
+function inspect(obj, depth = 20) {
+    return util.inspect(obj, {showHidden: false, depth: depth, colors: true, compact: 40, breakLength: 200});
 }
 
 module.exports.sha256 = sha256;

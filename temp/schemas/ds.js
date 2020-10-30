@@ -3,11 +3,11 @@ const ds_label = {
     "id": "/ds_label",
     "type": "object",
     "properties": {
-        "name": {
+        "label": {
             "required": true, 
             "type": "string"
         },
-        "children": {
+        "categories": {
             "required": true, 
             "type": "array", 
             "items": {
@@ -27,7 +27,7 @@ const ds_eval = {
     "id": "/ds_eval",
     "type": "object",
     "properties": {
-        "name": {
+        "evaluation": {
             "required": true,
             "type": "string"
         },
@@ -52,7 +52,7 @@ const ds_crit = {
     "id": "/ds_crit",
     "type": "object",
     "properties": {
-        "name": {
+        "criteria": {
             "required": true,
             "type": "string"
         },
@@ -71,7 +71,7 @@ const ds_ind = {
     "id": "/ds_ind",
     "type": "object",
     "properties": {
-        "name": {
+        "indicator": {
             "required": true,
             "type": "string"
         },
@@ -90,7 +90,7 @@ const ds_proc = {
     "id": "/ds_proc",
     "type": "object",
     "properties": {
-        "desc": {
+        "procedure": {
             "required": true,
             "type": "string"
         }
@@ -103,7 +103,7 @@ const ds = {
     "id": "/ds",
     "type": "object",
     "properties": {
-        "name": {
+        "digital_standard": {
             "required": true,
             "type": "string"
         },

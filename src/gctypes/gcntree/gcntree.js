@@ -81,6 +81,20 @@ Gcntree.prototype.dfs = function(pre, post, node = this.root, data = []) {
     return data;
 }
 
+// Get a node by node number as enumerated by DFS preorder traversal
+// This is our "official" systemwide enumeration scheme
+Gcntree.prototype.get_node = function(node_num) {
+    let n = 0;
+
+    return this.dfs((node, data) => {
+        if (n === node_num) {
+            data.push(node)
+        }
+        
+        n += 1;
+    })[0];
+}
+
 // JSON serializer
 // simple af way to serialize an n-ary tree in a JSON-ish way: keep it as a flat array of nodes with null sentinels 
 // to indicate that a given node has no more children (if you're descending from the root, backtrack one node

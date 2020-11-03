@@ -15,10 +15,13 @@ const Validator = require("jsonschema").Validator;
 const ds_schema = require("../../temp/schemas/ds.js");
 
 const gc = require("../gcutil/gcconfig.js");
+const gcapp = require("../gcapp/gcapp.js");
 const gcutil = require("../gcutil/gcutil.js");
 const gcstd = require("../gcstd/gcstd.js");
+const gctax = require("../gctax/gctax.js");
 const Gcntree = require("../gctypes/gcntree/gcntree.js");
 const Gceval = require("../gcstd/gceval.js");
+const Gcvec_map = require("../gctax/gcvec_map.js");
 
 const v = new Validator();
 
@@ -43,6 +46,7 @@ const GRAMMAR = new Map([
     ["fvalid", _fvalid],
     ["fcmp", _fcmp],
     ["parts", _parts],
+    ["vecs", _vecs],
     ["whatset", _whatset],
     ["debug", _debug] // TODO: Delete me!
 ]);
@@ -53,6 +57,29 @@ const doc = fs.readFileSync("../../temp/ds_103020.yml", {encoding: "utf8"});
 const ymldoc = yaml.safeLoad(doc, "utf8");
 const doc_tree = Gcntree.from_json_doc(ymldoc, Gcntree.trans.to_obj);
 const data_security_eval = new Gceval({std: doc_tree, nums: [333, 336, 339, 342, 345, 348, 352, 355, 358, 361, 364, 369, 372, 375, 378, 386, 394, 404, 412, 415, 418, 421, 424, 427, 435]});
+
+// And here we're creating a vector map that we can use to simulate having a vector map loaded in the data store
+const cr_vec_map = new Gcvec_map({name: "Consumer Reports Privacy & Security Testing"});
+cr_vec_map.add_link(gc.VECTORS.UI_AUTH, gcapp.get_node_hash(doc_tree, 311));
+cr_vec_map.add_link(gc.VECTORS.PW_COMPLEXITY, gcapp.get_node_hash(doc_tree, 357));
+cr_vec_map.add_link(gc.VECTORS.PW_COMPLEXITY, gcapp.get_node_hash(doc_tree, 360));
+cr_vec_map.add_link(gc.VECTORS.PW_COMPLEXITY, gcapp.get_node_hash(doc_tree, 363));
+cr_vec_map.add_link(gc.VECTORS.UI_AUTH, gcapp.get_node_hash(doc_tree, 342));
+cr_vec_map.add_link(gc.VECTORS.PW_COMPLEXITY, gcapp.get_node_hash(doc_tree, 352));
+cr_vec_map.add_link(gc.VECTORS.NOTIFICATION_MECHANISM, gcapp.get_node_hash(doc_tree, 369));
+cr_vec_map.add_link(gc.VECTORS.NOTIFICATION_MECHANISM, gcapp.get_node_hash(doc_tree, 372));
+cr_vec_map.add_link(gc.VECTORS.ATTACK_PROTECTION, gcapp.get_node_hash(doc_tree, 378));
+cr_vec_map.add_link(gc.VECTORS.ENCRYPTION, gcapp.get_node_hash(doc_tree, 386));
+cr_vec_map.add_link(gc.VECTORS.KNOWN_VULNERABILITY_CVE_CHECKS, gcapp.get_node_hash(doc_tree, 394));
+cr_vec_map.add_link(gc.VECTORS.AUTO_SECURITY_UPDATES, gcapp.get_node_hash(doc_tree, 418));
+cr_vec_map.add_link(gc.VECTORS.SECURITY_UPDATE_NOTIFICATION, gcapp.get_node_hash(doc_tree, 421));
+
+// Below is a case where an indicator actually has multiple indicators concatenated together as one long string; node #386 holds
+// indicators that cover DS parts S.4.1.2 and S.4.1.1 and it looks like a few more -- not sure what to do with these, so 
+// we're just skipping them
+// cr_vec_map.add_link(gc.VECTORS.ENCRYPTION_SI_STORAGE, gcapp.get_node_hash(doc_tree, 386));  
+
+console.log(cr_vec_map);
 
 async function _on_input(input) {
 	const tok = input.trim().split(" ");
@@ -90,8 +117,6 @@ function _debug() {
 
         n += 1;
     });
-
-    
 }
 
 // Display the meaningful parts of a given standard schema. These are the parts you reference for fnum, and eventually
@@ -201,6 +226,12 @@ function _clear() {
     console.clear();
 }
 
+function _vecs() {
+    gctax.get_vector_names().forEach((vec) => {
+        console.log(vec);
+    });
+}
+
 // TODO: it'd be cool if the GRAMMAR hashmap kept a lil help string for each token, and so we could automatically build the help menu by
 // iterating through the map instead of hardcoding it here
 function _help() {
@@ -218,6 +249,7 @@ function _help() {
     console.log("lstd\t\t\t\t\tList all available standards\n");
     console.log("parts [schema ID]\t\t\tDisplay the meaningful parts of a given standard schema\n");
     console.log("quit\t\t\t\t\tExit\n");
+    console.log("vecs\t\t\t\t\tDisplay the vector names known to this version of Ground Control\n");
     console.log("whatset [path] [eval ID]\t\tShow what set of parts applies for a given evaluation set and external standard file (in YAML format)");
 }
 

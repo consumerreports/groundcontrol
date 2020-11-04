@@ -79,8 +79,6 @@ cr_vec_map.add_link(gc.VECTORS.SECURITY_UPDATE_NOTIFICATION, gcapp.get_node_hash
 // we're just skipping them
 // cr_vec_map.add_link(gc.VECTORS.ENCRYPTION_SI_STORAGE, gcapp.get_node_hash(doc_tree, 386));  
 
-console.log(cr_vec_map);
-
 async function _on_input(input) {
 	const tok = input.trim().split(" ");
 	const f = GRAMMAR.get(tok[0]);

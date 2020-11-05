@@ -46,10 +46,17 @@ const GRAMMAR = new Map([
     ["fvalid", _fvalid],
     ["fcmp", _fcmp],
     ["parts", _parts],
+    ["testplan", _testplan],
     ["vecs", _vecs],
     ["whatset", _whatset],
     ["debug", _debug] // TODO: Delete me!
 ]);
+
+// Terminal colors
+const C = {
+    BRIGHT: "\x1b[1m",
+    RESET: "\x1b[0m"
+};
 
 // TODO: delete me
 // here we're just making some Gceval objects in the global scope that we can use to simulate having some in a data store
@@ -91,7 +98,7 @@ async function _on_input(input) {
 	try {
 		await f(...tok.slice(1));
 	} catch (err) {
-		console.log(`Fatal error ${err}`);
+		console.log(`Error: ${err.message}`);
 	}
 }
 
@@ -122,8 +129,7 @@ function _debug() {
 function _parts(id) {
     // Lol... since we're faking this one standard schema (ID: 'ds'), every other schema ID is currently not found
     if (id !== "ds") {
-        console.log("Error: invalid schema ID");
-        return;
+        throw new Error("Invalid schema ID");
     }
     
     // TODO: to avoid presenting the user with every single part of a standard schema, we  hypothesize that the 
@@ -144,14 +150,12 @@ function _parts(id) {
 // the 'parts' command
 function _fnum(path, sch_id, part_id) {
     if (!path) {
-        console.log("Error: missing path");
-        return;
+        throw new Error("Missing path");
     }
     
     // Lol... since we're faking this one standard schema (ID: 'ds'), every other schema ID is currently not found
     if (sch_id !== "ds") {
-        console.log("Error: invalid schema ID");
-        return;
+        throw new Error("Invalid schema ID");
     }
     
     try {
@@ -211,8 +215,46 @@ function _fnum(path, sch_id, part_id) {
 
         console.log(`Done! ${path} has ${snodes} '${prop}' (part ID ${part_id}) out of ${tnodes} total nodes.`);
     } catch (err) {
-        console.log(`Error: ${err.message}`);
+        throw new Error(err.message);
     }
+}
+
+function _testplan(tent_path, std_path, eval_id) {
+    if (!tent_path || !std_path) {
+        throw new Error("Missing path");
+    }
+
+    // TODO: lol, we only have one evaluation set, so if the eval_id doesn't match it, be an error
+    if (eval_id !== "datasec") {
+        throw new Error("Invalid evaluation set ID");
+    }
+
+    const tent = gcapp.load_tent_ext(tent_path);
+    
+    // this function needs to make a lot of comparisons and emit a lot of information
+    // 1) are there any vectors in the testable entity which are not applied by the evaluation set? (there can be partial application)
+    // this is messaged as:  "Samsung Streaming Media player has 2 vectors which will not be tested by evaluation set Data Security..."
+
+    // 2) are there any node hashes in the evaluation set which are not selected by the vectors of the testable entity?
+    // this is messaged as:  "Evaluation set Data Security prescribes 4 SOMETHINGS which do not apply to Samsung Streaming Media Player"
+
+    // 3) "For Samsung Streaming Media Player's 5 vectors to be tested for Data Security, 9 parts of My Unified Digital Standard must
+    // be applied" (print the list of parts showing the path from product vector, to evaluation set, to standard)
+
+    // "WARNING! Samsung Streaming Media player has 1 vector to be tested by Data Security which was not mapped to any part of My Unified
+    // Digital Standard!" 
+
+    // or: Each of Samsung Streaming Media player's 5 vectors were successfully mapped to My Unified Digtal Standard.
+
+    // 
+
+    tent.vecs.forEach((vec) => {
+        cr_vec_map.data.get((vec.vec)).forEach((node_hash) => {
+            if (data_security_eval.set.has(node_hash)) {
+                console.log(`evaluation set hit: ${node_hash}`); 
+            }
+        });
+    });
 }
 
 function _quit() {
@@ -236,19 +278,32 @@ function _help() {
     console.log("+-----------+");
     console.log("| gsch help |");
     console.log("+-----------+\n");
-    console.log("COMMAND\t\t\t\t\tRESULT");
-    console.log("clear\t\t\t\t\tClear screen\n"); 
-    console.log("fnum [path] [schema ID] [part ID]\tShow the enumerations for part of an external standard file (in YAML format)\n")
-    console.log("fcmp [path1] [path2] [schema ID]\tCompare two external standard files (in YAML format) and display the diff if any\n");
-    console.log("fvalid [path] [schema ID]\t\tValidate an external standard file (in YAML format) against a standard schema\n"); 
-    console.log("leval\t\t\t\t\tList all available evaluation sets\n");
-    console.log("lent\t\t\t\t\tList all available testable entities\n");
-    console.log("lsch\t\t\t\t\tList all available standard schemas\n");
-    console.log("lstd\t\t\t\t\tList all available standards\n");
-    console.log("parts [schema ID]\t\t\tDisplay the meaningful parts of a given standard schema\n");
-    console.log("quit\t\t\t\t\tExit\n");
-    console.log("vecs\t\t\t\t\tDisplay the vector names known to this version of Ground Control\n");
-    console.log("whatset [path] [eval ID]\t\tShow what set of parts applies for a given evaluation set and external standard file (in YAML format)");
+    
+    console.log(`${C.BRIGHT}clear\n${C.RESET}Clear screen\n\n`);  
+    
+    console.log(`${C.BRIGHT}fnum [path] [schema ID] [part ID]\n${C.RESET}Show the enumerations for part of an external standard file (in YAML format)\n\n`);
+    
+    console.log(`${C.BRIGHT}fcmp [path1] [path2] [schema ID]\n${C.RESET}Compare two external standard files (in YAML format) and display the diff if any\n\n`);
+    
+    console.log(`${C.BRIGHT}fvalid [path] [schema ID]\n${C.RESET}Validate an external standard file (in YAML format) against a standard schema\n\n`); 
+    
+    console.log(`${C.BRIGHT}leval\n${C.RESET}List all available evaluation sets\n\n`);
+    
+    console.log(`${C.BRIGHT}lent\n${C.RESET}List all available testable entities\n\n`);
+    
+    console.log(`${C.BRIGHT}lsch\n${C.RESET}List all available standard schemas\n\n`);
+    
+    console.log(`${C.BRIGHT}lstd\n${C.RESET}List all available standards\n\n`);
+    
+    console.log(`${C.BRIGHT}parts [schema ID]\n${C.RESET}Display the meaningful parts of a given standard schema\n\n`);
+    
+    console.log(`${C.BRIGHT}quit\n${C.RESET}Exit\n\n`);
+    
+    console.log(`${C.BRIGHT}testplan [entity path] [std path] [eval ID]\n${C.RESET}Show the suite of evaluations that must be performed for a given testable entity, standard, and evaluation set (using the default vector mapping).\n\n`);
+    
+    console.log(`${C.BRIGHT}vecs\n${C.RESET}Display the vector names known to this version of Ground Control\n\n`);
+    
+    console.log(`${C.BRIGHT}whatset [path] [eval ID]\n${C.RESET}Show what set of parts applies for a given evaluation set and external standard file (in YAML format)`);
 }
 
 // TODO: in "the future," leval would grab all the evaluation sets in the currently defined data store... for now, we're just
@@ -301,14 +356,12 @@ function _tree_node_compare(a, b) {
 
 function _fcmp(path1, path2, id) {
     if (!path1 || !path2) {
-        console.log("Error: missing path");
-        return;
+        throw new Error("Missing path");
     }
     
     // Lol... since we're faking this one standard schema (ID: 'ds'), every other schema ID is currently not found
     if (id !== "ds") {
-        console.log("Error: invalid schema ID");
-        return;
+        throw new Error("Invalid schema ID");
     }
 
     try {
@@ -368,20 +421,18 @@ function _fcmp(path1, path2, id) {
             console.log(node);
         });
     } catch(err) {
-        console.log(`Error: ${err.message}`);
+        throw new Error(err.message);
     }
 }
 
 function _fvalid(path, id) {
     if (!path) {
-        console.log("Error: missing path");
-        return;
+        throw new Error("Missing path");
     }
     
     // Lol... since we're faking this one standard schema (ID: 'ds'), every other schema ID is currently not found
     if (id !== "ds") {
-        console.log("Error: invalid schema ID");
-        return;
+        throw new Error("Invalid schema ID");
     }
 
     try {
@@ -397,20 +448,18 @@ function _fvalid(path, id) {
             console.log(`INVALID: ${path} has errors:\n\n${res.errors}`);
         }
     } catch(err) {
-        console.log(`Error: ${err.message}`);
+        throw new Error(err.message);
     }
 }
 
 function _whatset(path, id) {
     if (!path) {
-        console.log("Error: missing path");
-        return;
+        throw new Error("Missing path");
     }
 
     // Lol, we're faking this one evaluation set, so every other evaluation set ID is currently not found
     if (id !== "datasec") {
-        console.log("Error: invalid evaluation set ID");
-        return;
+        throw new Error("Invalid evaluation set ID");
     }
     
     // TODO: the data_security_eval object is defined in the global scope for demo purposes,
@@ -450,7 +499,7 @@ function _whatset(path, id) {
         
         console.log(`${id} selects ${parts.size} of ${n} total nodes in ${path}`);
     } catch(err) {
-        console.log(`Error: ${err.message}`);
+        throw new Error(err.message);
     }
 }
 

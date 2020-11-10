@@ -63,7 +63,7 @@ const C = {
 const doc = fs.readFileSync("../../temp/ds_103020.yml", {encoding: "utf8"});
 const ymldoc = yaml.safeLoad(doc, "utf8");
 const doc_tree = Gcntree.from_json_doc(ymldoc, Gcntree.trans.to_obj);
-const data_security_eval = new Gceval({std: doc_tree, nums: [333, 336, 339, 342, 345, 348, 352, 355, 358, 361, 364, 369, 372, 375, 378, 386, 394, 404, 412, 415, 418, 421, 424, 427, 435]});
+const data_security_eval = new Gceval({name: "Data Security", std: doc_tree, nums: [333, 336, 339, 342, 345, 348, 352, 355, 358, 361, 364, 369, 372, 375, 378, 386, 394, 404, 412, 415, 418, 421, 424, 427, 435]});
 
 // And here we're creating a vector map that we can use to simulate having a vector map loaded in the data store
 const cr_vec_map = new Gcvec_map({name: "Consumer Reports Privacy & Security Testing"});
@@ -220,6 +220,10 @@ function _fnum(path, sch_id, part_id) {
 }
 
 function _testplan(tent_path, std_path, eval_id) {
+    // TODO: This function should prob let you specify a vector mapping? The help text currently says it
+    // uses the default vector mapping... for now, let's just load the vector map we created in the global scope for testing
+    const vec_map = cr_vec_map;
+    
     if (!tent_path || !std_path) {
         throw new Error("Missing path");
     }
@@ -228,31 +232,96 @@ function _testplan(tent_path, std_path, eval_id) {
     if (eval_id !== "datasec") {
         throw new Error("Invalid evaluation set ID");
     }
+    
+    // Load the test evaluation set we created in the global scope
+    const eval_set = data_security_eval;
 
+    // load_tent_ext checks to make sure that all of the tent's vectors are in our folksonomy, so that's taken care of
     const tent = gcapp.load_tent_ext(tent_path);
     
-    // this function needs to make a lot of comparisons and emit a lot of information
-    // 1) are there any vectors in the testable entity which are not applied by the evaluation set? (there can be partial application)
-    // this is messaged as:  "Samsung Streaming Media player has 2 vectors which will not be tested by evaluation set Data Security..."
+    // Now load the standard file and transform to a Gcntree
+    const doc = fs.readFileSync(std_path, {encoding: "utf8"});
+    const ymldoc = yaml.safeLoad(doc, "utf8");
+    const doc_tree = Gcntree.from_json_doc(ymldoc, Gcntree.trans.to_obj);
 
-    // 2) are there any node hashes in the evaluation set which are not selected by the vectors of the testable entity?
-    // this is messaged as:  "Evaluation set Data Security prescribes 4 SOMETHINGS which do not apply to Samsung Streaming Media Player"
-
-    // 3) "For Samsung Streaming Media Player's 5 vectors to be tested for Data Security, 9 parts of My Unified Digital Standard must
-    // be applied" (print the list of parts showing the path from product vector, to evaluation set, to standard)
-
-    // "WARNING! Samsung Streaming Media player has 1 vector to be tested by Data Security which was not mapped to any part of My Unified
-    // Digital Standard!" 
-
-    // or: Each of Samsung Streaming Media player's 5 vectors were successfully mapped to My Unified Digtal Standard.
-
-    // 
-
-    tent.vecs.forEach((vec) => {
-        cr_vec_map.data.get((vec.vec)).forEach((node_hash) => {
-            if (data_security_eval.set.has(node_hash)) {
-                console.log(`evaluation set hit: ${node_hash}`); 
+    const vec_coverage = tent.vecs.map((vec) => {
+        return vec_map.get_links(vec.vec).map((node_hash) => {
+            if (eval_set.set.has(node_hash)) {
+                return true;
             }
+
+            return false;
+        });
+    });
+
+    const total_evals = vec_coverage.reduce((acc, bool_list) => {
+        return acc + bool_list.length;
+    }, 0);
+
+    const selected_evals = vec_coverage.reduce((acc, bool_list) => {
+        return acc + bool_list.reduce((acc, bool) => {
+            return bool ? acc + 1 : acc;
+        }, 0);
+    }, 0);
+    
+        console.log(`\nVECTOR COVERAGE REPORT: '${tent.tent}' x '${eval_set.name}'...\n`)
+    console.log(`'${tent.tent}' has ${tent.vecs.length} vectors; a complete test requires ${total_evals} evaluations\n`);
+    console.log(`'${eval_set.name}' will perform ${selected_evals}/${total_evals} evaluations:\n`); 
+    
+    tent.vecs.forEach((vec, i) => {
+        console.log(`${vec.vec} => ${vec_coverage[i].reduce((acc, bool) => { return acc + (bool ? 1 : 0)}, 0)}/${vec_coverage[i].length}`);
+    });
+
+    console.log(`\n'${eval_set.name}' includes ${Array.from(eval_set.set.values()).length - selected_evals} evaluations which do not apply to '${tent.tent}'`);
+       
+    // Associate selected hashes with their vec names   
+    const a = new Map(tent.vecs.map((vec) => {
+        return vec_map.get_links(vec.vec).filter((hash) => {
+            return eval_set.set.has(hash);
+        }).map((hash) => {
+            return [hash, vec.vec];
+        });
+    }).flat());
+   
+    // Prep a hashmap that associates vec names with tree search results
+    const b = new Map(Array.from(a.values()).map(val => [val, []]));
+   
+    // Inorder traversal time - if we get a hash match on a, push the text of the standard part and its node number into b
+    // Collect the matching hashes for later
+    let n = 0;
+
+    const found_hashes = doc_tree.dfs((node, data) => {
+        const vec_name = a.get(gc.DEFAULT_HASH(node.data));
+
+        if (vec_name) {
+            b.get(vec_name).push({std_txt: node.data, node_num: n});
+            data.push(gc.DEFAULT_HASH(node.data));
+        }
+
+        n += 1;
+    });
+    
+    // Get the set complement of a with respect to the hashes found above, the result is the hashes that weren't found in the standard
+    const unfound = Array.from(a.keys()).filter((hash) => {
+        return !found_hashes.includes(hash);
+    });
+    
+    if (unfound.length === 0) {
+        console.log(`\nSUCCESS: All ${a.size} links were resolved in ${std_path}\n`);
+    } else {
+        console.log(`\nWARNING: ${unfound.length} links were not resolved in ${std_path}\n`);
+    }
+    
+    console.log("*************");
+    console.log("* TEST PLAN *");
+    console.log("*************");
+
+    Array.from(b.entries()).forEach((keyval) => {
+        console.log(`\n${keyval[0]}`);
+
+        keyval[1].forEach((node_info) => {
+            console.log(node_info.node_num);
+            console.log(node_info.std_txt);
         });
     });
 }
@@ -299,7 +368,7 @@ function _help() {
     
     console.log(`${C.BRIGHT}quit\n${C.RESET}Exit\n\n`);
     
-    console.log(`${C.BRIGHT}testplan [entity path] [std path] [eval ID]\n${C.RESET}Show the suite of evaluations that must be performed for a given testable entity, standard, and evaluation set (using the default vector mapping).\n\n`);
+    console.log(`${C.BRIGHT}testplan [entity path] [std path] [eval ID]\n${C.RESET}Show the suite of evaluations that must be performed for a given testable entity, standard, and evaluation set (using the default vector mapping)\n\n`);
     
     console.log(`${C.BRIGHT}vecs\n${C.RESET}Display the vector names known to this version of Ground Control\n\n`);
     

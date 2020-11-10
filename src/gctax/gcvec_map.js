@@ -17,4 +17,8 @@ Gcvec_map.prototype.add_link = function(vec_name, data) {
     list.push(data);
 }
 
+Gcvec_map.prototype.get_links = function(vec_name) {
+    return this.data.get(vec_name);
+}
+
 module.exports = Gcvec_map;

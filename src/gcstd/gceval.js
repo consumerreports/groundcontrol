@@ -9,12 +9,13 @@ const Gcntree = require("../gctypes/gcntree/gcntree.js");
 // you'd probably see a standard in the UI, with all its nodes color coded by its role ("part") in the schema
 // and you could click to select a set of homogenous nodes
 // TODO: we probably shouldn't allow you to derive a Gceval from an incorrect standard... 
-function Gceval({std = null, nums = []} = {}) {
+function Gceval({std = null, nums = [], name = ""} = {}) {
     // TODO: to validate or not to validate? if we check this, shouldn't we also make sure nums has > 0 elements, etc?
     if (!(std instanceof Gcntree)) {
         throw new Error("Argument 'std' must be a Gcntree");
     }
-
+    
+    this.name = name;
     this.set = new Set();
     const tree_data = new Map();
     let n = 0;

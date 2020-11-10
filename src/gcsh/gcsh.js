@@ -219,7 +219,7 @@ function _fnum(path, sch_id, part_id) {
     }
 }
 
-function _testplan(tent_path, std_path, eval_id) {
+async function _testplan(tent_path, std_path, eval_id) {
     // TODO: This function should prob let you specify a vector mapping? The help text currently says it
     // uses the default vector mapping... for now, let's just load the vector map we created in the global scope for testing
     const vec_map = cr_vec_map;
@@ -264,9 +264,15 @@ function _testplan(tent_path, std_path, eval_id) {
         }, 0);
     }, 0);
     
-        console.log(`\nVECTOR COVERAGE REPORT: '${tent.tent}' x '${eval_set.name}'...\n`)
-    console.log(`'${tent.tent}' has ${tent.vecs.length} vectors; a complete test requires ${total_evals} evaluations\n`);
-    console.log(`'${eval_set.name}' will perform ${selected_evals}/${total_evals} evaluations:\n`); 
+    console.log(`\nPRODUCT: '${tent.tent}'`);
+    console.log(`EVALUATION SET: '${eval_set.name}'`);
+    console.log(`STANDARD: ${std_path}`);
+    
+    console.log(`\n'${tent.tent}':`);
+    console.log(`VECTORS: ${tent.vecs.length}`);
+    console.log(`TOTAL EVALUATIONS REQUIRED: ${total_evals}\n`);
+
+    console.log(`Evaluation set '${eval_set.name}' selects ${selected_evals} of ${total_evals} possible evaluations:\n`); 
     
     tent.vecs.forEach((vec, i) => {
         console.log(`${vec.vec} => ${vec_coverage[i].reduce((acc, bool) => { return acc + (bool ? 1 : 0)}, 0)}/${vec_coverage[i].length}`);
@@ -286,7 +292,7 @@ function _testplan(tent_path, std_path, eval_id) {
     // Prep a hashmap that associates vec names with tree search results
     const b = new Map(Array.from(a.values()).map(val => [val, []]));
    
-    // Inorder traversal time - if we get a hash match on a, push the text of the standard part and its node number into b
+    // Inorder traversal, if we get a hash match on a, push the text of the standard part and its node number into b
     // Collect the matching hashes for later
     let n = 0;
 
@@ -312,6 +318,9 @@ function _testplan(tent_path, std_path, eval_id) {
         console.log(`\nWARNING: ${unfound.length} links were not resolved in ${std_path}\n`);
     }
     
+    console.log("Press any key to view the test plan...");
+    await press_any_key();
+
     console.log("*************");
     console.log("* TEST PLAN *");
     console.log("*************");
@@ -572,19 +581,32 @@ function _whatset(path, id) {
     }
 }
 
+async function input_handler(input) {
+    if (input.length > 0) {
+        await _on_input(input);  
+    }
+
+    rl.prompt();
+}
+
+function press_any_key() {
+    return new Promise((resolve, reject) => {
+        rl.removeListener("line", input_handler);
+        
+        rl.once("line", () => {
+            rl.on("line", input_handler);
+            resolve();
+        });
+    });
+}
+
 const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
     prompt: PROMPT
 });
 
-rl.on("line", async (input) => {
-	if (input.length > 0) {
-		await _on_input(input);
-	}
-	
-	rl.prompt();
-});
+rl.on("line", input_handler);
 
 console.log("                                 _                   _             _ ");
 console.log("                                | |                 | |           | |");

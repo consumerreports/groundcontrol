@@ -11,7 +11,7 @@ Node.js > 12
 ```bash
 git clone https://github.com/noahlevenson/groundcontrol
 
-cd groundcontrol
+cd groundcontrol/src
 
 npm i
 ```

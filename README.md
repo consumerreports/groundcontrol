@@ -49,7 +49,7 @@ to certain standards, which, you know, is probably why we called it the digital 
 
 - ~~for split schemas, how do we get jsonschema to pass recursively nested errors down the stack?~~
 
-### HOW TO ADDRESS FORMATTING ISSUES FOUND IN THE LEGACY DIGITAL STANDARD REPO?
+### How to address formatting issues found in the legacy digital standard repo?
 
 1. Multiline strings... oh boy. There's lots of newlines in strings, often inconsistently -- sometimes one break between sentences, somes two or more. However, at least some of these newlines may be required to format this stuff on the web? I'm not really sure. A better world to move towards is one where there are no special characters in the YAML, but rather each separate entity in the data is represented properly as a separate object, and the static site build process formats each entity as desired. But this may require some coordination with the folks at Ocupop...
 

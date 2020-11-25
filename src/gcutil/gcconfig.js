@@ -12,7 +12,7 @@ const DEFAULT_HASH = function(data) {
 
 // This is our controlled folksonomy of vector names
 const VECTORS = {
-    UI_AUTH : "UI_AUTH",
+    UI_AUTH: "UI_AUTH",
     PW_COMPLEXITY: "PW_COMPLEXITY",
     NOTIFICATION_MECHANISM: "NOTIFICATION_MECHANISM",
     ATTACK_PROTECTION: "ATTACK_PROTECTION",

@@ -36,6 +36,7 @@ const PROMPT = "gcsh > ";
 
 const GRAMMAR = new Map([
     ["quit", _quit],
+    ["checkset", _checkset],
     ["clear", _clear],
     ["fnum", _fnum],
     ["help", _help],
@@ -48,7 +49,6 @@ const GRAMMAR = new Map([
     ["parts", _parts],
     ["testplan", _testplan],
     ["vecs", _vecs],
-    ["whatset", _whatset],
     ["debug", _debug] // TODO: Delete me!
 ]);
 
@@ -356,7 +356,7 @@ function _help() {
     console.log("+-----------+");
     console.log("| gsch help |");
     console.log("+-----------+\n");
-    
+    console.log(`${C.BRIGHT}checkset [eval ID] [path]\n${C.RESET}Apply an evaluation set against an external standard file (in YAML format) and show resolved links\n\n`);
     console.log(`${C.BRIGHT}clear\n${C.RESET}Clear screen\n\n`);  
     
     console.log(`${C.BRIGHT}fnum [path] [schema ID] [part ID]\n${C.RESET}Show the enumerations for part of an external standard file (in YAML format)\n\n`);
@@ -380,8 +380,6 @@ function _help() {
     console.log(`${C.BRIGHT}testplan [entity path] [std path] [eval ID]\n${C.RESET}Show the suite of evaluations that must be performed for a given testable entity, standard, and evaluation set (using the default vector mapping)\n\n`);
     
     console.log(`${C.BRIGHT}vecs\n${C.RESET}Display the vector names known to this version of Ground Control\n\n`);
-    
-    console.log(`${C.BRIGHT}whatset [path] [eval ID]\n${C.RESET}Show what set of parts applies for a given evaluation set and external standard file (in YAML format)`);
 }
 
 // TODO: in "the future," leval would grab all the evaluation sets in the currently defined data store... for now, we're just
@@ -530,7 +528,7 @@ function _fvalid(path, id) {
     }
 }
 
-function _whatset(path, id) {
+function _checkset(id, path) {
     if (!path) {
         throw new Error("Missing path");
     }
@@ -548,21 +546,19 @@ function _whatset(path, id) {
         const doc = fs.readFileSync(path, {encoding: "utf8"});
         const doctree = Gcntree.from_json_doc(yaml.safeLoad(doc, "utf8"), Gcntree.trans.to_obj);
         
-        const parts = new Set();
+        const parts = new Map();
         let n = 0;
 
         doctree.dfs((node, data) => {
-            if (ev.set.has(gc.DEFAULT_HASH(node.data))) {
-                parts.add(node.data);
+            const node_hash = gc.DEFAULT_HASH(node.data);
+
+            if (ev.set.has(node_hash)) {
+                parts.set(node_hash, node.data);
             }
 
             n += 1
         });
         
-        if (parts.size !== ev.set.size) {
-            throw new Error(`Evaluation set ${id} is a mismatch for ${path}`); 
-        }
-            
         const homogeneous = Array.from(parts.values()).every((obj, i, arr) => {
             return Object.keys(obj)[0] === Object.keys(arr[0])[0]
         });
@@ -576,6 +572,16 @@ function _whatset(path, id) {
         });
         
         console.log(`${id} selects ${parts.size} of ${n} total nodes in ${path}`);
+        
+        // unresolved holds any node hashes specified by the evaluation set that we didn't find in the standard
+        const found_hashes = Array.from(parts.keys());
+        const unresolved = Array.from(ev.set.values()).filter(node_hash => !found_hashes.includes(node_hash));
+
+        if (unresolved.length === 0) {
+            console.log(`SUCCESS: All ${ev.set.size} links were resolved in ${path}!`);
+        } else {
+            console.log(`WARNING: ${unresolved} links could not be resolved in ${path}!`);
+        }
     } catch(err) {
         throw new Error(err.message);
     }

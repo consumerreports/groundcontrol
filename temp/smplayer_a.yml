@@ -1,4 +1,4 @@
-tent: Example Streaming Media Player
+tent: Example Streaming Media Player A
 notes: You can write anything you want here, it's a string field for arbitrary metadata
 vecs:
     - vec: UI_AUTH

@@ -1,8 +1,8 @@
-const gctent_schema = {
-    "id": "/gctent_schema",
+const gcgroup_schema = {
+    "id": "/gcgroup_schema",
     "type": "object",
     "properties": {
-        "tent": {
+        "group": {
             "required": true,
             "type": "string"
         },
@@ -10,7 +10,7 @@ const gctent_schema = {
             "required": true,
             "type": "string"
         },
-        "vecs": {
+        "tent_paths": {
             "required": true,
             "type": "array",
             "items": {
@@ -22,4 +22,4 @@ const gctent_schema = {
     "additionalProperties": false
 };
 
-module.exports.gctent_schema = gctent_schema;
+module.exports.gcgroup_schema = gcgroup_schema;

@@ -1,0 +1,5 @@
+group: All of our streaming media players
+notes: This is a free field where you can write arbitrary stuff
+tent_paths:
+    - tent_path: smplayer_a.yml
+    - tent_path: smplayer_b.yml

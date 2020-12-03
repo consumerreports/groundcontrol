@@ -1,6 +1,7 @@
 "use strict";
 
 const Validator = require("jsonschema").Validator;
+const v = new Validator();
 const gctax = require("./gctax.js");
 const gctent_schema = require("./schemas/gctent_schema.js");
 
@@ -10,8 +11,7 @@ function Gctent() {
 }
 
 Gctent.is_valid = function(tent) {
-    const v = new Validator();
-    const res = v.validate(tent, gctent_schema, {nestedErrors: true});
+    const res = v.validate(tent, gctent_schema);
     return res.errors.length > 0 ? false : true;
 }
 

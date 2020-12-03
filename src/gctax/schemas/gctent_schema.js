@@ -14,7 +14,13 @@ const gctent_schema = {
             "required": true,
             "type": "array",
             "items": {
-                "type": "string"
+                "type": "object",
+                "properties": {
+                    "vec": {
+                        "required": true,
+                        "type": "string"
+                    }
+                }
             },
             "minItems": 1
         }
@@ -22,4 +28,4 @@ const gctent_schema = {
     "additionalProperties": false
 };
 
-module.exports.gctent_schema = gctent_schema;
+module.exports = gctent_schema;

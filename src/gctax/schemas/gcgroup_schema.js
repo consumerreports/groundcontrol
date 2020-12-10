@@ -14,7 +14,13 @@ const gcgroup_schema = {
             "required": true,
             "type": "array",
             "items": {
-                "type": "string"
+                "type": "object",
+                "properties": {
+                    "tent_path": {
+                        "required": true,
+                        "type": "string"
+                    }
+                }
             },
             "minItems": 1
         }
@@ -22,4 +28,4 @@ const gcgroup_schema = {
     "additionalProperties": false
 };
 
-module.exports.gcgroup_schema = gcgroup_schema;
+module.exports = gcgroup_schema;

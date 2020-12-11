@@ -2,9 +2,12 @@
 
 const yaml = require("js-yaml");
 const fs = require("fs");
+const p = require("path");
 const gc = require("../gcutil/gcconfig.js");
 const Gctent = require("../gctax/gctent.js");
+const Gcgroup = require("../gctax/gcgroup.js");
 
+// Compute the hash of node number n in a Gcntree
 function get_node_hash(std, n) {
     let count = 0;
 
@@ -20,7 +23,7 @@ function get_node_hash(std, n) {
 // Load a testable entity from an external YML file, validate its structure and vec definitions
 // Returns the deserialized testable entity
 function load_tent_ext(path) {
-    // TODO: what happens if errors happen? during file I/O or deserialization?
+    // TODO: what happens if errors happen during file I/O or deserialization?
     const doc = fs.readFileSync(path, {encoding: "utf8"});
     const json = yaml.safeLoad(doc, "utf8");
     
@@ -33,9 +36,28 @@ function load_tent_ext(path) {
     if (bad_vecs.length > 0) {
         throw new Error(`Testable entity '${json.tent}' has unknown vector(s): ${bad_vecs.join(", ")}`);
     }
+    
+    return new Gctent({name: json.tent, notes: json.notes, vecs: json.vecs.map(vec => vec.vec)});
+}
 
-    return json;
+// Load a group from an external YML file, validate its structure and constituent testable entities
+// assumes that testable entities are referenced using relative pathnames
+function load_group_ext(path) {
+    // TODO: what happens if errors happen during file I/O or deserialization?
+    const doc = fs.readFileSync(path, {encoding: "utf8"});
+    const json = yaml.safeLoad(doc, "utf8");
+    
+    if (!Gcgroup.is_valid(json)) {
+        throw new Error(`${path} is not a valid group`);
+    }
+    
+    return new Gcgroup({
+        name: json.group,
+        notes: json.notes,
+        tents: json.tent_paths.map(tent_path => load_tent_ext(`${p.dirname(path)}/${tent_path.tent_path}`))
+    });
 }
 
 module.exports.get_node_hash = get_node_hash;
 module.exports.load_tent_ext = load_tent_ext;
+module.exports.load_group_ext = load_group_ext;

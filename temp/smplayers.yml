@@ -1,0 +1,5 @@
+group: Streaming Media Players
+notes: This is an example group consisting of two imaginary streaming media players
+tent_paths: 
+    - tent_path: smplayer_a.yml
+    - tent_path: smplayer_b.yml

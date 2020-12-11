@@ -6,8 +6,10 @@ const gctax = require("./gctax.js");
 const gctent_schema = require("./schemas/gctent_schema.js");
 
 // TODO: this will be our in-memory data structure for testable entities
-function Gctent() {
-
+function Gctent({name, notes, vecs = []} = []) {
+    this.name = name;
+    this.notes = notes;
+    this.vecs = vecs;
 }
 
 Gctent.is_valid = function(tent) {

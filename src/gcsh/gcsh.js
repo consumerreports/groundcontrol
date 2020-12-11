@@ -104,24 +104,7 @@ async function _on_input(input) {
 
 // TODO: delete me!
 function _debug() {
-    const doc = fs.readFileSync("/home/noah/work/groundcontrol/temp/ds_unified.yml", {encoding: "utf8"});
-    const ymldoc = yaml.safeLoad(doc, "utf8");
-    const doc_tree = Gcntree.from_json_doc(ymldoc, Gcntree.trans.to_obj);
-    
-    
-
-    let n = 0;
-
-    doc_tree.dfs((node, data) => {
-        if (n === 445) {
-            while (node !== null) {
-                console.log(gcutil.inspect(node), 100);
-                node = node.parent;
-            }
-        }
-
-        n += 1;
-    });
+    console.log(gcapp.load_group_ext("/home/noah/work/groundcontrol/temp/smplayers.yml"));
 }
 
 // Display the meaningful parts of a given standard schema. These are the parts you reference for fnum, and eventually
@@ -235,9 +218,12 @@ async function _testplan(tent_path, std_path, eval_id) {
     
     // Load the test evaluation set we created in the global scope
     const eval_set = data_security_eval;
-
+    
     // load_tent_ext checks to make sure that all of the tent's vectors are in our folksonomy, so that's taken care of
     const tent = gcapp.load_tent_ext(tent_path);
+
+
+
     
     // Now load the standard file and transform to a Gcntree
     const doc = fs.readFileSync(std_path, {encoding: "utf8"});
@@ -245,7 +231,7 @@ async function _testplan(tent_path, std_path, eval_id) {
     const doc_tree = Gcntree.from_json_doc(ymldoc, Gcntree.trans.to_obj);
 
     const vec_coverage = tent.vecs.map((vec) => {
-        return vec_map.get_links(vec.vec).map((node_hash) => {
+        return vec_map.get_links(vec).map((node_hash) => {
             if (eval_set.set.has(node_hash)) {
                 return true;
             }
@@ -264,28 +250,28 @@ async function _testplan(tent_path, std_path, eval_id) {
         }, 0);
     }, 0);
     
-    console.log(`\nPRODUCT: '${tent.tent}'`);
+    console.log(`\nPRODUCT: '${tent.name}'`);
     console.log(`EVALUATION SET: '${eval_set.name}'`);
     console.log(`STANDARD: ${std_path}`);
     
-    console.log(`\n'${tent.tent}':`);
+    console.log(`\n'${tent.name}':`);
     console.log(`VECTORS: ${tent.vecs.length}`);
     console.log(`TOTAL EVALUATIONS REQUIRED: ${total_evals}\n`);
 
     console.log(`Evaluation set '${eval_set.name}' selects ${selected_evals} of ${total_evals} possible evaluations:\n`); 
     
     tent.vecs.forEach((vec, i) => {
-        console.log(`${vec.vec} => ${vec_coverage[i].reduce((acc, bool) => { return acc + (bool ? 1 : 0)}, 0)}/${vec_coverage[i].length}`);
+        console.log(`${vec} => ${vec_coverage[i].reduce((acc, bool) => { return acc + (bool ? 1 : 0)}, 0)}/${vec_coverage[i].length}`);
     });
 
-    console.log(`\n'${eval_set.name}' includes ${Array.from(eval_set.set.values()).length - selected_evals} evaluations which do not apply to '${tent.tent}'`);
+    console.log(`\n'${eval_set.name}' includes ${Array.from(eval_set.set.values()).length - selected_evals} evaluations which do not apply to '${tent.name}'`);
        
     // Associate selected hashes with their vec names   
     const a = new Map(tent.vecs.map((vec) => {
-        return vec_map.get_links(vec.vec).filter((hash) => {
+        return vec_map.get_links(vec).filter((hash) => {
             return eval_set.set.has(hash);
         }).map((hash) => {
-            return [hash, vec.vec];
+            return [hash, vec];
         });
     }).flat());
    

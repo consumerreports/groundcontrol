@@ -39,6 +39,7 @@ const GRAMMAR = new Map([
     ["checkset", _checkset],
     ["clear", _clear],
     ["fnum", _fnum],
+    ["grinfo", _grinfo],
     ["help", _help],
     ["leval", _leval],
     ["lent", _lent],
@@ -336,6 +337,33 @@ function _vecs() {
     });
 }
 
+function _grinfo(path) {
+    if (!path) {
+        throw new Error("Missing path");
+    }
+
+    const group = gcapp.load_group_ext(path);
+
+    console.log(`${group.name}`);
+    console.log(`(${group.notes})\n`);
+    
+    const vectors = new Map();
+
+    group.tents.forEach((tent, i) => {
+        console.log(`${i}: ${tent.name}`);
+        console.log(`(${tent.vecs.length} vectors)\n`);
+
+        tent.vecs.forEach((vec) => {
+            const qty = vectors.get(vec);
+            vectors.set(vec, (qty === undefined ? 0 : qty) + 1);
+        });
+    });
+    
+    const common = Array.from(vectors.entries()).filter(keyval => keyval[1] > 1);
+    console.log(`This group contains ${group.tents.length} testable entities which share ${common.length} common vectors:\n`);
+    common.forEach(keyval => console.log(keyval[0]));
+}
+
 // TODO: it'd be cool if the GRAMMAR hashmap kept a lil help string for each token, and so we could automatically build the help menu by
 // iterating through the map instead of hardcoding it here
 function _help() {
@@ -351,6 +379,8 @@ function _help() {
     
     console.log(`${C.BRIGHT}fvalid [path] [schema ID]\n${C.RESET}Validate an external standard file (in YAML format) against a standard schema\n\n`); 
     
+    console.log(`${C.BRIGHT}grinfo [path]\n${C.RESET}Show info for an external group file (in YAML format)\n\n`);
+
     console.log(`${C.BRIGHT}leval\n${C.RESET}List all available evaluation sets\n\n`);
     
     console.log(`${C.BRIGHT}lent\n${C.RESET}List all available testable entities\n\n`);

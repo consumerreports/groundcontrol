@@ -1,4 +1,5 @@
-"use strict";
+
+
 
 // In the future, gcsh should call high level API functions from gcapp, which should call lower level
 // functions from gcstd and gctax... but since we're not implementing a data I/O layer for the prototype,
@@ -13,6 +14,8 @@ const yaml = require("js-yaml");
 const fs = require("fs");
 const Validator = require("jsonschema").Validator;
 const ds_schema = require("../../temp/schemas/ds.js");
+const gcgroup_schema = require("../gctax/schemas/gcgroup_schema.js");
+const gctent_schema = require("../gctax/schemas/gctent_schema.js");
 
 const gc = require("../gcutil/gcconfig.js");
 const gcapp = require("../gcapp/gcapp.js");
@@ -203,12 +206,12 @@ function _fnum(path, sch_id, part_id) {
     }
 }
 
-async function _testplan(tent_path, std_path, eval_id) {
+async function _testplan(subj_path, std_path, eval_id) {
     // TODO: This function should prob let you specify a vector mapping? The help text currently says it
     // uses the default vector mapping... for now, let's just load the vector map we created in the global scope for testing
     const vec_map = cr_vec_map;
     
-    if (!tent_path || !std_path) {
+    if (!subj_path || !std_path) {
         throw new Error("Missing path");
     }
 
@@ -220,18 +223,31 @@ async function _testplan(tent_path, std_path, eval_id) {
     // Load the test evaluation set we created in the global scope
     const eval_set = data_security_eval;
     
-    // load_tent_ext checks to make sure that all of the tent's vectors are in our folksonomy, so that's taken care of
-    const tent = gcapp.load_tent_ext(tent_path);
+    // Deserialize the file for the test subject and determine if it's a tent or a group
+    // TODO: this duplicates the validation that occurs in the group and tent loaders, do we care?
+    const subj_doc = fs.readFileSync(subj_path, {encoding: "utf8"});
+    const subj_obj = yaml.safeLoad(subj_doc, "utf8");
+    const v = new Validator();
+    let is_group = true;
+    let subj = null;
 
-
-
+    if (v.validate(subj_obj, gcgroup_schema).errors.length === 0) {
+        subj = gcapp.load_group_ext(subj_path);
+    } else if (v.validate(subj_obj, gctent_schema).errors.length === 0) {
+        is_group = false;
+        subj = gcapp.load_tent_ext(subj_path);
+    } else {
+        throw new Error(`${subj_path} doesn't seem to be a group or a testable entity`);
+    }
     
-    // Now load the standard file and transform to a Gcntree
+    // Load the standard file and transform to a Gcntree
     const doc = fs.readFileSync(std_path, {encoding: "utf8"});
     const ymldoc = yaml.safeLoad(doc, "utf8");
     const doc_tree = Gcntree.from_json_doc(ymldoc, Gcntree.trans.to_obj);
-
-    const vec_coverage = tent.vecs.map((vec) => {
+    
+    const vecs_to_evaluate = is_group ? gctax.get_common_vecs(subj.tents) : subj.vecs;
+    
+    const vec_coverage = vecs_to_evaluate.map((vec) => {
         return vec_map.get_links(vec).map((node_hash) => {
             if (eval_set.set.has(node_hash)) {
                 return true;
@@ -251,24 +267,28 @@ async function _testplan(tent_path, std_path, eval_id) {
         }, 0);
     }, 0);
     
-    console.log(`\nPRODUCT: '${tent.name}'`);
+    if (is_group) {
+        console.log(`\nGROUP: '${subj.name}' (${subj.tents.map(tent => tent.name).join(", ")})`);
+    } else {
+        console.log(`\nENTITY: '${subj.name}'`);
+    }
+
     console.log(`EVALUATION SET: '${eval_set.name}'`);
     console.log(`STANDARD: ${std_path}`);
     
-    console.log(`\n'${tent.name}':`);
-    console.log(`VECTORS: ${tent.vecs.length}`);
-    console.log(`TOTAL EVALUATIONS REQUIRED: ${total_evals}\n`);
+    console.log(`VECTORS: ${vecs_to_evaluate.length} ${is_group ? "in common" : ""}`);
+    // console.log(`TOTAL EVALUATIONS REQUIRED: ${total_evals}\n`);
 
     console.log(`Evaluation set '${eval_set.name}' selects ${selected_evals} of ${total_evals} possible evaluations:\n`); 
     
-    tent.vecs.forEach((vec, i) => {
+    vecs_to_evaluate.forEach((vec, i) => {
         console.log(`${vec} => ${vec_coverage[i].reduce((acc, bool) => { return acc + (bool ? 1 : 0)}, 0)}/${vec_coverage[i].length}`);
     });
 
-    console.log(`\n'${eval_set.name}' includes ${Array.from(eval_set.set.values()).length - selected_evals} evaluations which do not apply to '${tent.name}'`);
+    console.log(`\n'${eval_set.name}' includes ${Array.from(eval_set.set.values()).length - selected_evals} evaluations which do not apply to '${subj.name}'`);
        
     // Associate selected hashes with their vec names   
-    const a = new Map(tent.vecs.map((vec) => {
+    const a = new Map(vecs_to_evaluate.map((vec) => {
         return vec_map.get_links(vec).filter((hash) => {
             return eval_set.set.has(hash);
         }).map((hash) => {
@@ -347,21 +367,14 @@ function _grinfo(path) {
     console.log(`${group.name}`);
     console.log(`(${group.notes})\n`);
     
-    const vectors = new Map();
-
     group.tents.forEach((tent, i) => {
         console.log(`${i}: ${tent.name}`);
         console.log(`(${tent.vecs.length} vectors)\n`);
-
-        tent.vecs.forEach((vec) => {
-            const qty = vectors.get(vec);
-            vectors.set(vec, (qty === undefined ? 0 : qty) + 1);
-        });
     });
     
-    const common = Array.from(vectors.entries()).filter(keyval => keyval[1] > 1);
+    const common = gctax.get_common_vecs(group.tents);
     console.log(`This group contains ${group.tents.length} testable entities which share ${common.length} common vectors:\n`);
-    common.forEach(keyval => console.log(keyval[0]));
+    common.forEach(str => console.log(str));
 }
 
 // TODO: it'd be cool if the GRAMMAR hashmap kept a lil help string for each token, and so we could automatically build the help menu by
@@ -393,7 +406,7 @@ function _help() {
     
     console.log(`${C.BRIGHT}quit\n${C.RESET}Exit\n\n`);
     
-    console.log(`${C.BRIGHT}testplan [entity path] [std path] [eval ID]\n${C.RESET}Show the suite of evaluations that must be performed for a given testable entity, standard, and evaluation set (using the default vector mapping)\n\n`);
+    console.log(`${C.BRIGHT}testplan [subject path] [std path] [eval ID]\n${C.RESET}Show the suite of evaluations that must be performed for a given test subject (either a group or a single testable entity), standard, and evaluation set (using the default vector mapping)\n\n`);
     
     console.log(`${C.BRIGHT}vecs\n${C.RESET}Display the vector names known to this version of Ground Control\n\n`);
 }

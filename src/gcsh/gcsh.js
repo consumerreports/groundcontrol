@@ -26,6 +26,8 @@ const Gcntree = require("../gctypes/gcntree/gcntree.js");
 const Gceval = require("../gcstd/gceval.js");
 const Gcvec_map = require("../gctax/gcvec_map.js");
 
+const Gcstore_gs = require("../gcdata/store/gcstore_gs.js");
+
 const v = new Validator();
 
 // register all the split schemas with the validator
@@ -61,6 +63,11 @@ const C = {
     BRIGHT: "\x1b[1m",
     RESET: "\x1b[0m"
 };
+
+// Init all our modules and system processes
+// TODO: move me to gcapp constructor
+const io_gs = new Gcstore_gs();
+io_gs.init(); 
 
 // TODO: delete me
 // here we're just making some Gceval objects in the global scope that we can use to simulate having some in a data store

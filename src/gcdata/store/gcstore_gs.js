@@ -1,12 +1,82 @@
 "use strict";
 
+const fs = require("fs");
+const readline = require("readline");
 const Gcstore_base = require("./gcstore_base.js");
+const { google } = require("googleapis");
+
+const SCOPES = ["https://www.googleapis.com/auth/spreadsheets"];
+const TOKEN_PATH = "../gcenv/token.json";
 
 function Gcstore_gs({} = {}) {
    Gcstore_base.call(this);
 }
 
 Gcstore_gs.prototype = Object.create(Gcstore_base.prototype);
+
+Gcstore_gs.prototype.init = function() {
+	function authorize(credentials, callback) {
+		const {client_secret, client_id, redirect_uris} = credentials.installed;
+		const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0]);
+
+		// Check if we have previously stored a token.
+  		fs.readFile(TOKEN_PATH, (err, token) => {
+    		if (err) {
+    			return get_new_token(oAuth2Client, callback);
+    		}
+    	
+    		oAuth2Client.setCredentials(JSON.parse(token));
+    		callback(oAuth2Client);
+		}); 
+	}
+
+	function get_new_token(oAuth2Client, callback) {
+		const authUrl = oAuth2Client.generateAuthUrl({
+    		access_type: 'offline',
+    		scope: SCOPES,
+  		});
+
+		console.log("Authorize Ground Control to use your Google Sheets account by visiting this URL:", authUrl);
+		
+		const rl = readline.createInterface({
+			input: process.stdin,
+			output: process.stdout,
+		});
+  	
+  		rl.question("Enter the code from that page here: ", (code) => {
+    		rl.close();
+
+    		oAuth2Client.getToken(code, (err, token) => {
+	      		if (err) {
+	      			return console.error("Error while trying to retrieve access token", err);
+	      		}
+
+	      		oAuth2Client.setCredentials(token);
+	     		
+	     		// Store the token to disk for later program executions
+	     		fs.writeFile(TOKEN_PATH, JSON.stringify(token), (err) => {
+	        		if (err) {
+	        			return console.error(err);
+	        		}
+	        		
+	        		console.log("Token stored to", TOKEN_PATH);
+	      		});
+	     
+	     		callback(oAuth2Client);
+			});
+  		});
+	}
+
+	console.log("[GCDATA] Using Google Sheets module");
+
+	fs.readFile("../gcenv/credentials.json", (err, content) => {
+  		if (err) {
+			return console.log("Error loading client secret file:", err);
+		}
+  
+  		authorize(JSON.parse(content), () => {});
+	});
+}
 
 Gcstore_gs.prototype.put = function(id) {
     // TODO: write me

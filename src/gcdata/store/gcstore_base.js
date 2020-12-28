@@ -4,7 +4,7 @@ function Gcstore({} = {}) {
 
 }
 
-Gcstore.prototype.init = function() {
+Gcstore.prototype.init = async function() {
     // Do nothing
 }
 

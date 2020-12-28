@@ -1,7 +1,7 @@
 
 
 
-// In the future, gcsh should call high level API functions from gcapp, which should call lower level
+// In the future, gcsh should call high level API functions from Gcapp, which should call lower level
 // functions from gcstd and gctax... but since we're not implementing a data I/O layer for the prototype,
 // we're not really implementing any of the modules the way they're meant to be implemented. so all
 // the gcsh functions are just stubs that will need to be replaced...
@@ -18,7 +18,7 @@ const gcgroup_schema = require("../gctax/schemas/gcgroup_schema.js");
 const gctent_schema = require("../gctax/schemas/gctent_schema.js");
 
 const gc = require("../gcutil/gcconfig.js");
-const gcapp = require("../gcapp/gcapp.js");
+const Gcapp = require("../gcapp/gcapp.js");
 const gcutil = require("../gcutil/gcutil.js");
 const gcstd = require("../gcstd/gcstd.js");
 const gctax = require("../gctax/gctax.js");
@@ -64,10 +64,30 @@ const C = {
     RESET: "\x1b[0m"
 };
 
-// Init all our modules and system processes
-// TODO: move me to gcapp constructor
-const io_gs = new Gcstore_gs();
-io_gs.init(); 
+// Construct + init a new instance of the API, make it use the google sheets I/O module
+const app = new Gcapp({data_modules: [new Gcstore_gs()]});
+let rl = null;
+
+app.init().then(() => {
+    rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout,
+        prompt: PROMPT
+    });
+
+    rl.on("line", input_handler);
+
+    console.log("                                 _                   _             _ ");
+    console.log("                                | |                 | |           | |");
+    console.log("  __ _ _ __ ___  _   _ _ __   __| |   ___ ___  _ __ | |_ _ __ ___ | |");
+    console.log(" / _` | '__/ _ \\| | | | '_ \\ / _` |  / __/ _ \\| '_ \\| __| '__/ _ \\| |");
+    console.log("| (_| | | | (_) | |_| | | | | (_| | | (_| (_) | | | | |_| | | (_) | |");
+    console.log(" \\__, |_|  \\___/ \\__,_|_| |_|\\__,_|  \\___\\___/|_| |_|\\__|_|  \\___/|_|");
+    console.log("  __/ |                                                              ");
+    console.log(" |___/                                                               ");
+    console.log("                 Welcome to gcsh. Type 'help' for a list of commands.\n");
+    rl.prompt();
+});
 
 // TODO: delete me
 // here we're just making some Gceval objects in the global scope that we can use to simulate having some in a data store
@@ -78,24 +98,24 @@ const data_security_eval = new Gceval({name: "Data Security", std: doc_tree, num
 
 // And here we're creating a vector map that we can use to simulate having a vector map loaded in the data store
 const cr_vec_map = new Gcvec_map({name: "Consumer Reports Privacy & Security Testing"});
-cr_vec_map.add_link(gc.VECTORS.UI_AUTH, gcapp.get_node_hash(doc_tree, 311));
-cr_vec_map.add_link(gc.VECTORS.PW_COMPLEXITY, gcapp.get_node_hash(doc_tree, 357));
-cr_vec_map.add_link(gc.VECTORS.PW_COMPLEXITY, gcapp.get_node_hash(doc_tree, 360));
-cr_vec_map.add_link(gc.VECTORS.PW_COMPLEXITY, gcapp.get_node_hash(doc_tree, 363));
-cr_vec_map.add_link(gc.VECTORS.UI_AUTH, gcapp.get_node_hash(doc_tree, 342));
-cr_vec_map.add_link(gc.VECTORS.PW_COMPLEXITY, gcapp.get_node_hash(doc_tree, 352));
-cr_vec_map.add_link(gc.VECTORS.NOTIFICATION_MECHANISM, gcapp.get_node_hash(doc_tree, 369));
-cr_vec_map.add_link(gc.VECTORS.NOTIFICATION_MECHANISM, gcapp.get_node_hash(doc_tree, 372));
-cr_vec_map.add_link(gc.VECTORS.ATTACK_PROTECTION, gcapp.get_node_hash(doc_tree, 378));
-cr_vec_map.add_link(gc.VECTORS.ENCRYPTION, gcapp.get_node_hash(doc_tree, 386));
-cr_vec_map.add_link(gc.VECTORS.KNOWN_VULNERABILITY_CVE_CHECKS, gcapp.get_node_hash(doc_tree, 394));
-cr_vec_map.add_link(gc.VECTORS.AUTO_SECURITY_UPDATES, gcapp.get_node_hash(doc_tree, 418));
-cr_vec_map.add_link(gc.VECTORS.SECURITY_UPDATE_NOTIFICATION, gcapp.get_node_hash(doc_tree, 421));
+cr_vec_map.add_link(gc.VECTORS.UI_AUTH, Gcapp.get_node_hash(doc_tree, 311));
+cr_vec_map.add_link(gc.VECTORS.PW_COMPLEXITY, Gcapp.get_node_hash(doc_tree, 357));
+cr_vec_map.add_link(gc.VECTORS.PW_COMPLEXITY, Gcapp.get_node_hash(doc_tree, 360));
+cr_vec_map.add_link(gc.VECTORS.PW_COMPLEXITY, Gcapp.get_node_hash(doc_tree, 363));
+cr_vec_map.add_link(gc.VECTORS.UI_AUTH, Gcapp.get_node_hash(doc_tree, 342));
+cr_vec_map.add_link(gc.VECTORS.PW_COMPLEXITY, Gcapp.get_node_hash(doc_tree, 352));
+cr_vec_map.add_link(gc.VECTORS.NOTIFICATION_MECHANISM, Gcapp.get_node_hash(doc_tree, 369));
+cr_vec_map.add_link(gc.VECTORS.NOTIFICATION_MECHANISM, Gcapp.get_node_hash(doc_tree, 372));
+cr_vec_map.add_link(gc.VECTORS.ATTACK_PROTECTION, Gcapp.get_node_hash(doc_tree, 378));
+cr_vec_map.add_link(gc.VECTORS.ENCRYPTION, Gcapp.get_node_hash(doc_tree, 386));
+cr_vec_map.add_link(gc.VECTORS.KNOWN_VULNERABILITY_CVE_CHECKS, Gcapp.get_node_hash(doc_tree, 394));
+cr_vec_map.add_link(gc.VECTORS.AUTO_SECURITY_UPDATES, Gcapp.get_node_hash(doc_tree, 418));
+cr_vec_map.add_link(gc.VECTORS.SECURITY_UPDATE_NOTIFICATION, Gcapp.get_node_hash(doc_tree, 421));
 
 // Below is a case where an indicator actually has multiple indicators concatenated together as one long string; node #386 holds
 // indicators that cover DS parts S.4.1.2 and S.4.1.1 and it looks like a few more -- not sure what to do with these, so 
 // we're just skipping them
-// cr_vec_map.add_link(gc.VECTORS.ENCRYPTION_SI_STORAGE, gcapp.get_node_hash(doc_tree, 386));  
+// cr_vec_map.add_link(gc.VECTORS.ENCRYPTION_SI_STORAGE, Gcapp.get_node_hash(doc_tree, 386));  
 
 async function _on_input(input) {
 	const tok = input.trim().split(" ");
@@ -115,7 +135,7 @@ async function _on_input(input) {
 
 // TODO: delete me!
 function _debug() {
-    console.log(gcapp.load_group_ext("/home/noah/work/groundcontrol/temp/smplayers.yml"));
+    console.log(Gcapp.load_group_ext("/home/noah/work/groundcontrol/temp/smplayers.yml"));
 }
 
 // Display the meaningful parts of a given standard schema. These are the parts you reference for fnum, and eventually
@@ -168,7 +188,7 @@ function _fnum(path, sch_id, part_id) {
         const doc_tree = Gcntree.from_json_doc(ymldoc, Gcntree.trans.to_obj);
         
         // TODO: we've decided that a standard's nodes are canonically enumerated using DFS preorder traversal
-        // we should prob wrap this in an API layer function like gcapp.enumerate_nodes()
+        // we should prob wrap this in an API layer function like Gcapp.enumerate_nodes()
         let tnodes = 0;
         let snodes = 0;
         
@@ -239,10 +259,10 @@ async function _testplan(subj_path, std_path, eval_id) {
     let subj = null;
 
     if (v.validate(subj_obj, gcgroup_schema).errors.length === 0) {
-        subj = gcapp.load_group_ext(subj_path);
+        subj = Gcapp.load_group_ext(subj_path);
     } else if (v.validate(subj_obj, gctent_schema).errors.length === 0) {
         is_group = false;
-        subj = gcapp.load_tent_ext(subj_path);
+        subj = Gcapp.load_tent_ext(subj_path);
     } else {
         throw new Error(`${subj_path} doesn't seem to be a group or a testable entity`);
     }
@@ -369,7 +389,7 @@ function _grinfo(path) {
         throw new Error("Missing path");
     }
 
-    const group = gcapp.load_group_ext(path);
+    const group = Gcapp.load_group_ext(path);
 
     console.log(`${group.name}`);
     console.log(`(${group.notes})\n`);
@@ -641,22 +661,3 @@ function press_any_key() {
         });
     });
 }
-
-const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-    prompt: PROMPT
-});
-
-rl.on("line", input_handler);
-
-console.log("                                 _                   _             _ ");
-console.log("                                | |                 | |           | |");
-console.log("  __ _ _ __ ___  _   _ _ __   __| |   ___ ___  _ __ | |_ _ __ ___ | |");
-console.log(" / _` | '__/ _ \\| | | | '_ \\ / _` |  / __/ _ \\| '_ \\| __| '__/ _ \\| |");
-console.log("| (_| | | | (_) | |_| | | | | (_| | | (_| (_) | | | | |_| | | (_) | |");
-console.log(" \\__, |_|  \\___/ \\__,_|_| |_|\\__,_|  \\___\\___/|_| |_|\\__|_|  \\___/|_|");
-console.log("  __/ |                                                              ");
-console.log(" |___/                                                               ");
-console.log("                 Welcome to gcsh. Type 'help' for a list of commands.\n");
-rl.prompt();

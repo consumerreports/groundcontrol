@@ -69,4 +69,9 @@ Gcapp.prototype.init = async function() {
     await Promise.all(this.data_modules.map(module => module.init()));
 }
 
+// Return a list of the data modules associated with this instance of Gcapp 
+Gcapp.prototype.get_data_modules = function() {
+    return this.data_modules;
+}
+
 module.exports = Gcapp;

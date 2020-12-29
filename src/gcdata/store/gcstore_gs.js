@@ -10,7 +10,9 @@ const TOKEN_PATH = "../gcenv/token.json";
 
 function Gcstore_gs({cred_path = "../gcenv/credentials.json"} = {}) {
    Gcstore_base.call(this);
+   this.type = "GOOGLE SHEETS";
    this.cred_path = cred_path;
+   this.sheets = google.sheets("v4");
 }
 
 Gcstore_gs.prototype = Object.create(Gcstore_base.prototype);
@@ -83,14 +85,12 @@ Gcstore_gs.prototype.init = function() {
     });
 }
 
-Gcstore_gs.prototype.put = function(id) {
-    // TODO: write me
-    console.log("PUT called");
+Gcstore_gs.prototype.put = function(key, val) {
+  
 }
 
-Gcstore_gs.prototype.get = function(id) {
-    // TODO: write me
-    console.log("GET called");
+Gcstore_gs.prototype.get = async function(key) {
+    return await this.sheets.spreadsheets.get({spreadsheetId: key});
 }
 
 module.exports = Gcstore_gs;

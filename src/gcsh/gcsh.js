@@ -46,6 +46,7 @@ const GRAMMAR = new Map([
     ["fnum", _fnum],
     ["grinfo", _grinfo],
     ["help", _help],
+    ["io", _io],
     ["leval", _leval],
     ["lent", _lent],
     ["lsch", _lsch],
@@ -69,6 +70,8 @@ const app = new Gcapp({data_modules: [new Gcstore_gs()]});
 let rl = null;
 
 app.init().then(() => {
+   
+
     rl = readline.createInterface({
         input: process.stdin,
         output: process.stdout,
@@ -231,6 +234,12 @@ function _fnum(path, sch_id, part_id) {
     } catch (err) {
         throw new Error(err.message);
     }
+}
+
+function _io() {
+    app.get_data_modules().forEach((module, i) => {
+        console.log(`${i}: ${module.type}`);
+    });   
 }
 
 async function _testplan(subj_path, std_path, eval_id) {
@@ -420,7 +429,9 @@ function _help() {
     console.log(`${C.BRIGHT}fvalid [path] [schema ID]\n${C.RESET}Validate an external standard file (in YAML format) against a standard schema\n\n`); 
     
     console.log(`${C.BRIGHT}grinfo [path]\n${C.RESET}Show info for an external group file (in YAML format)\n\n`);
-
+    
+    console.log(`${C.BRIGHT}io\n${C.RESET}Display the data I/O modules associated with the running instance of Ground Control\n\n`);
+    
     console.log(`${C.BRIGHT}leval\n${C.RESET}List all available evaluation sets\n\n`);
     
     console.log(`${C.BRIGHT}lent\n${C.RESET}List all available testable entities\n\n`);

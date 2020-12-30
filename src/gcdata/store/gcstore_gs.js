@@ -13,6 +13,7 @@ function Gcstore_gs({cred_path = "../gcenv/credentials.json"} = {}) {
    this.type = "GOOGLE SHEETS";
    this.cred_path = cred_path;
    this.sheets = google.sheets("v4");
+   this.client = null;
 }
 
 Gcstore_gs.prototype = Object.create(Gcstore_base.prototype);
@@ -21,22 +22,22 @@ Gcstore_gs.prototype.init = function() {
 	return new Promise((resolve, reject) => {
         function authorize(credentials, callback) {
             const {client_secret, client_id, redirect_uris} = credentials.installed;
-            const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0]);
-
+            this.client = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0]);
+            
             // Check if we have previously stored a token.
             fs.readFile(TOKEN_PATH, (err, token) => {
                 if (err) {
-                    return get_new_token(oAuth2Client, callback);
+                    return get_new_token(this.client, callback);
                 }
             
-                oAuth2Client.setCredentials(JSON.parse(token));
-                callback(oAuth2Client);
+                this.client.setCredentials(JSON.parse(token));
+                callback(this.client);
                 resolve();
             }); 
         }
 
-        function get_new_token(oAuth2Client, callback) {
-                const authUrl = oAuth2Client.generateAuthUrl({
+        function get_new_token(client, callback) {
+                const authUrl = client.generateAuthUrl({
                     access_type: 'offline',
                 scope: SCOPES,
             });
@@ -51,12 +52,12 @@ Gcstore_gs.prototype.init = function() {
             rl.question("[GCDATA] Enter the code from that page here: ", (code) => {
                 rl.close();
 
-                oAuth2Client.getToken(code, (err, token) => {
+                client.getToken(code, (err, token) => {
                     if (err) {
                         reject("Error while trying to retrieve access token" + err);
                     }
 
-                    oAuth2Client.setCredentials(token);
+                    client.setCredentials(token);
                     
                     // Store the token to disk for later program executions
                     fs.writeFile(TOKEN_PATH, JSON.stringify(token), (err) => {
@@ -68,7 +69,7 @@ Gcstore_gs.prototype.init = function() {
                         resolve();
                     });
              
-                    callback(oAuth2Client);
+                    callback(client);
                 });
             });
         }
@@ -80,17 +81,41 @@ Gcstore_gs.prototype.init = function() {
                 reject("Error loading client secret file:" +  err);
             }
       
-            authorize(JSON.parse(content), () => {});
+            authorize.bind(this, JSON.parse(content), () => {})();
         });
     });
 }
 
 Gcstore_gs.prototype.put = function(key, val) {
-  
+    // TODO: write me
 }
 
 Gcstore_gs.prototype.get = async function(key) {
-    return await this.sheets.spreadsheets.get({spreadsheetId: key});
+    return await this.sheets.spreadsheets.get({spreadsheetId: key, auth: this.client});
+}
+
+Gcstore_gs.prototype._create = function(title) {
+    return new Promise((resolve, reject) => {
+        const resource = {
+            properties: {
+                title: title
+            }
+        };
+
+        this.sheets.spreadsheets.create({
+            auth: this.client,
+            resource: resource,
+            fields: "spreadsheetId"
+        }, (err, spreadsheet) => {
+            if (err) {
+                // TODO: handle error
+                reject(err);
+                return;
+            }
+            
+            resolve(spreadsheet.data.spreadsheetId);
+        });
+    });
 }
 
 module.exports = Gcstore_gs;

@@ -70,8 +70,6 @@ const app = new Gcapp({data_modules: [new Gcstore_gs()]});
 let rl = null;
 
 app.init().then(() => {
-   
-
     rl = readline.createInterface({
         input: process.stdin,
         output: process.stdout,
@@ -137,8 +135,11 @@ async function _on_input(input) {
 }
 
 // TODO: delete me!
-function _debug() {
-    console.log(Gcapp.load_group_ext("/home/noah/work/groundcontrol/temp/smplayers.yml"));
+async function _debug() {
+    //const res = await app.data_modules[0].get("sdfsdfsfdd");
+    //console.log(res);
+    const res = await app.data_modules[0]._create("Hi it's a test sheet"); 
+    console.log(`Successfully created sheet ${res}`);
 }
 
 // Display the meaningful parts of a given standard schema. These are the parts you reference for fnum, and eventually

@@ -138,8 +138,7 @@ async function _on_input(input) {
 async function _debug() {
     //const res = await app.data_modules[0].get("sdfsdfsfdd");
     //console.log(res);
-    const res = await app.data_modules[0]._create("Hi it's a test sheet"); 
-    console.log(`Successfully created sheet ${res}`);
+    const res = await app.data_modules[0].put("imakey", {properties: {title: "Hi i'm a test spreadsheet"}, sheets: [{properties: {title: "i'm a test sheet title"}}]}); 
 }
 
 // Display the meaningful parts of a given standard schema. These are the parts you reference for fnum, and eventually

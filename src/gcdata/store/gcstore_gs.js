@@ -86,22 +86,36 @@ Gcstore_gs.prototype.init = function() {
     });
 }
 
-Gcstore_gs.prototype.put = function(key, val) {
-    // TODO: write me
+Gcstore_gs.prototype.put = async function(key, val) {
+    // Try to retrieve the sheet associated with the specified key...
+    // if we find it, overwrite it -- if not, create a new sheet and return its key
+    // Assumes that val is a spreadsheet resource: https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets
+    // TODO: the overwrite case doesn't work yet!
+    try {
+        const res = await this.get(key);
+
+        const request = {
+            spreadsheetId: res,
+            range: "DEBUG_PLACEHOLDER", // TODO: make me work
+            valueInputOption: "DEBUG_PLACEHOLDER", // TODO: make me work
+            resource: {}, // TODO: make me work
+            auth: this.client
+        };
+
+        return await this.sheets.spreadsheets.values.update(request).data;
+    } catch(err) {
+        console.log(`[GCDATA] (${this.type}) No record found for sheet '${key}' -- creating new sheet...`);
+        const res = await this._create(val); // TODO: are errors handled here? 
+        console.log(`[GCDATA] (${this.type}) Success! Created sheet ${res}`);
+    }
 }
 
 Gcstore_gs.prototype.get = async function(key) {
     return await this.sheets.spreadsheets.get({spreadsheetId: key, auth: this.client});
 }
 
-Gcstore_gs.prototype._create = function(title) {
+Gcstore_gs.prototype._create = function(resource) {
     return new Promise((resolve, reject) => {
-        const resource = {
-            properties: {
-                title: title
-            }
-        };
-
         this.sheets.spreadsheets.create({
             auth: this.client,
             resource: resource,

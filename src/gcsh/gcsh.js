@@ -136,9 +136,58 @@ async function _on_input(input) {
 
 // TODO: delete me!
 async function _debug() {
-    //const res = await app.data_modules[0].get("sdfsdfsfdd");
-    //console.log(res);
-    const res = await app.data_modules[0].put("imakey", {properties: {title: "Hi i'm a test spreadsheet"}, sheets: [{properties: {title: "i'm a test sheet title"}}]}); 
+    // https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/sheets#Sheet
+
+    // https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/cells#CellData
+
+    // https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/other#ExtendedValue
+
+     const val = {
+        properties: {
+            title: "Hi i'm a test spreadsheet"
+        }, 
+        sheets: [
+            {
+                properties: {
+                    title: "i'm a test sheet title"
+                },
+                data: [
+                    {
+                        startRow: 0,
+                        startColumn: 0,
+                        rowData: [
+                            {
+                                values: [
+                                    {userEnteredValue: {stringValue: "Test cell foo"}},
+                                    {userEnteredValue: {stringValue: "Test cell bar"}},
+                                    {userEnteredValue: {stringValue: "Test cell baz"}} 
+                                ]
+                            },
+                            {
+                                values: [
+                                    {userEnteredValue: {numberValue: 31337}},
+                                    {userEnteredValue: {numberValue: 0.31337}},
+                                    {userEnteredValue: {numberValue: 31337.31337}}
+                                ]
+                            }
+                        ],
+                        rowMetadata: [
+                            {
+                            
+                            }
+                        ],
+                        columnMetadata: [
+                            {
+
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+     };
+
+    const res = await app.data_modules[0].put("imakey", val);
 }
 
 // Display the meaningful parts of a given standard schema. These are the parts you reference for fnum, and eventually

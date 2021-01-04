@@ -24,6 +24,10 @@ cd src/gcsh
 node gcsh.js
 ```
 
+### Integration with external services
+
+Ground Control can use the Google Sheets API to write and fetch data; this functionality is implemented as a gcdata module through a simplified PUT/GET interface ([src/gcdata/store/gcstore_gs.js](https://github.com/noahlevenson/groundcontrol/blob/master/src/gcdata/store/gcstore_gs.js)). To take advantage of Google Sheets integration, you'll need to drop your own valid API credential in [src/gcenv](https://github.com/noahlevenson/groundcontrol/tree/master/src/gcenv). *Consumer Reports staff should contact noah.levenson@consumer.org to obtain an API credential.* 
+
 ### TODO
 
 - go through all the TODOs. there are a lot!

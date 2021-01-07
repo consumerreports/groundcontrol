@@ -10,6 +10,7 @@ const Gcgroup = require("../gctax/gcgroup.js");
 const Gcvec_map = require("../gctax/gcvec_map.js");
 const Gcntree = require("../gctypes/gcntree/gcntree.js");
 const gcgroup_schema = require("../gctax/schemas/gcgroup_schema.js");
+const gctent_schema = require("../gctax/schemas/gctent_schema.js");
 const Validator = require("jsonschema").Validator;
 
 // Gcapp constructor

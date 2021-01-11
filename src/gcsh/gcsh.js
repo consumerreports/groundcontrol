@@ -152,7 +152,7 @@ async function _debug() {
                         ],
                         rowMetadata: [
                             {
-                            
+                             
                             }
                         ],
                         columnMetadata: [
@@ -292,7 +292,8 @@ async function _testplan(subj_path, std_path, eval_id) {
             console.log(node_info.std_txt);
         });
     });
-
+    
+    // *** GOOGLE SHEETS EXPORT ***
     const gs_api_idxs = app.get_data_modules().map((mod, i) => {
         return {module: mod, idx: i};
     }).filter(module => module.module.type === "GOOGLE SHEETS");
@@ -318,18 +319,12 @@ async function _testplan(subj_path, std_path, eval_id) {
 // Reports, and aren't designed to generalize to other standards. Having said all this, we're regarding workbooks 
 // a prototype-era escape hatch provided by gcsh while we figure out the right way for Ground Control to structure
 // and store test results.
-function _testplan_to_gs_workbook(tp, path) {
-    // We want to replicate this workbook template: 
-    // https://docs.google.com/spreadsheets/d/1r_1nqdfgpUdEbOUSnlJGvOIq-ZAy5abLYrVa2YfUPl0/edit?usp=sharing
-    // L to R, the columns seem to be: unique identifier for the applicaple standard part, unique identifer 
-    // for its parent evaluation, readinessFlag of its parent evaluation, name of the parent evaluation, 
-    // text of the applicable standard part
-    
+function _testplan_to_gs_workbook(tp, std_path) {
     // Collect all the node numbers in the testplan hashmap into a set
     const node_nums = new Set(Array.from(tp.values()).flat().map(obj => obj.node_num));
     
     // Load the standard and transform to a Gcntree 
-    const doc = fs.readFileSync(path, {encoding: "utf8"});
+    const doc = fs.readFileSync(std_path, {encoding: "utf8"});
     const ymldoc = yaml.safeLoad(doc, "utf8");
     const doc_tree = Gcntree.from_json_doc(ymldoc, Gcntree.trans.to_obj);
     
@@ -367,47 +362,51 @@ function _testplan_to_gs_workbook(tp, path) {
         n += 1;
     });
 
-    console.log(mat);
+    const rows = mat.map((row) => {
+        return {
+            values: [
+                {userEnteredValue: {numberValue: row[0]}},
+                {userEnteredValue: {numberValue: row[1]}},
+                {userEnteredValue: {numberValue: row[2]}},
+                {userEnteredValue: {stringValue: row[3]}},
+                {userEnteredValue: {stringValue: row[4]}}
+            ]
+        };
+    });
+    
+    // 5 columns: unique ID, unique ID of parent, readiness flag, name of category, text of evaluation
+    const column_metadata = [
+        {pixelSize: 50},
+        {pixelSize: 50},
+        {pixelSize: 50},
+        {pixelSize: 200},
+        {pixelSize: 600}
+    ];
+     
+    // TODO: we need the names of each tent to be tested in this testplan, so we need to develop the testplan res
+    // data structure which returns metadata along with the hashmap of standard parts (and then move all the
+    // console logging out of gcapp and to the testplan function above)
 
     const val = {
         properties: {
-            title: "Hi i'm a test spreadsheet"
+            title: `Test Plan ${new Date().toLocaleString()}`
         }, 
         sheets: [
             {
                 properties: {
-                    title: "i'm a test sheet title"
+                    title: "HORIZONTAL"
                 },
                 data: [
                     {
                         startRow: 0,
                         startColumn: 0,
-                        rowData: [
-                            {
-                                values: [
-                                    {userEnteredValue: {stringValue: "Test cell foo"}},
-                                    {userEnteredValue: {stringValue: "Test cell bar"}},
-                                    {userEnteredValue: {stringValue: "Test cell baz"}} 
-                                ]
-                            },
-                            {
-                                values: [
-                                    {userEnteredValue: {numberValue: 31337}},
-                                    {userEnteredValue: {numberValue: 0.31337}},
-                                    {userEnteredValue: {numberValue: 31337.31337}}
-                                ]
-                            }
-                        ],
+                        rowData: rows,
                         rowMetadata: [
                             {
                             
                             }
                         ],
-                        columnMetadata: [
-                            {
-
-                            }
-                        ]
+                        columnMetadata: column_metadata
                     }
                 ]
             }

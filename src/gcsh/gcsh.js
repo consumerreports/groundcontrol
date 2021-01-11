@@ -1,5 +1,4 @@
-
-
+"use strict";
 
 // In the future, gcsh should call high level API functions from Gcapp, which should call lower level
 // functions from gcstd and gctax... but since we're not implementing a data I/O layer for the prototype,

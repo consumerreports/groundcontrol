@@ -5,6 +5,7 @@ const fs = require("fs");
 const p = require("path");
 const gc = require("../gcutil/gcconfig.js");
 const gctax = require("../gctax/gctax.js");
+const Gcapp_tp_res = require("./gcapp_tp_res.js");
 const Gctent = require("../gctax/gctent.js");
 const Gcgroup = require("../gctax/gcgroup.js");
 const Gcvec_map = require("../gctax/gcvec_map.js");
@@ -125,28 +126,7 @@ Gcapp.testplan_ext = function(subj_path, std_path, eval_set) {
             return bool ? acc + 1 : acc;
         }, 0);
     }, 0);
-   
-    // TODO: Don't log non-system statuses in a Gcapp function! return this stuff as data and log it from the caller
-    if (is_group) {
-        console.log(`\nGROUP: '${subj.name}' (${subj.tents.map(tent => tent.name).join(", ")})`);
-    } else {
-        console.log(`\nENTITY: '${subj.name}'`);
-    }
-
-    console.log(`EVALUATION SET: '${eval_set.name}'`);
-    console.log(`STANDARD: ${std_path}`);
     
-    console.log(`VECTORS: ${vecs_to_evaluate.length} ${is_group ? "in common" : ""}`);
-    // console.log(`TOTAL EVALUATIONS REQUIRED: ${total_evals}\n`);
-
-    console.log(`Evaluation set '${eval_set.name}' selects ${selected_evals} of ${total_evals} possible evaluations:\n`); 
-    
-    vecs_to_evaluate.forEach((vec, i) => {
-        console.log(`${vec} => ${vec_coverage[i].reduce((acc, bool) => { return acc + (bool ? 1 : 0)}, 0)}/${vec_coverage[i].length}`);
-    });
-
-    console.log(`\n'${eval_set.name}' includes ${Array.from(eval_set.set.values()).length - selected_evals} evaluations which do not apply to '${subj.name}'`);
-       
     // Associate selected hashes with their vec names   
     const a = new Map(vecs_to_evaluate.map((vec) => {
         return vec_map.get_links(vec).filter((hash) => {
@@ -179,13 +159,19 @@ Gcapp.testplan_ext = function(subj_path, std_path, eval_set) {
         return !found_hashes.includes(hash);
     });
     
-    if (unfound.length === 0) {
-        console.log(`\nSUCCESS: All ${a.size} links were resolved in ${std_path}\n`);
-    } else {
-        console.log(`\nWARNING: ${unfound.length} links were not resolved in ${std_path}\n`);
-    }
-    
-    return b;
+    return new Gcapp_tp_res({
+        map: b,
+        subj: subj,
+        is_group: is_group,
+        eval_set: eval_set,
+        std_path: std_path,
+        vecs_to_evaluate: vecs_to_evaluate,
+        selected_evals: selected_evals,
+        total_evals: total_evals,
+        vec_coverage: vec_coverage,
+        num_links: a.size,
+        num_unfound: unfound.length
+    });
 }
 
 // Initialize an instance of a Gcapp object - a new Gcapp object isn't ready to use until this has been executed

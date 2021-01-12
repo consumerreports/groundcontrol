@@ -277,6 +277,32 @@ async function _testplan(subj_path, std_path, eval_id) {
     
     const res = Gcapp.testplan_ext(subj_path, std_path, eval_set);
     
+    if (res.is_group) {
+        console.log(`\nGROUP: '${res.subj.name}' (${res.subj.tents.map(tent => tent.name).join(", ")})`);
+    } else {
+        console.log(`\nENTITY: '${res.subj.name}'`);
+    }
+
+    console.log(`EVALUATION SET: '${res.eval_set.name}'`);
+    console.log(`STANDARD: ${res.std_path}`);
+    
+    console.log(`VECTORS: ${res.vecs_to_evaluate.length} ${res.is_group ? "in common" : ""}`);
+    // console.log(`TOTAL EVALUATIONS REQUIRED: ${total_evals}\n`);
+
+    console.log(`Evaluation set '${res.eval_set.name}' selects ${res.selected_evals} of ${res.total_evals} possible evaluations:\n`); 
+    
+    res.vecs_to_evaluate.forEach((vec, i) => {
+        console.log(`${vec} => ${res.vec_coverage[i].reduce((acc, bool) => { return acc + (bool ? 1 : 0)}, 0)}/${res.vec_coverage[i].length}`);
+    });
+
+    console.log(`\n'${res.eval_set.name}' includes ${Array.from(res.eval_set.set.values()).length - res.selected_evals} evaluations which do not apply to '${res.subj.name}'`);
+    
+    if (res.num_unfound === 0) {
+        console.log(`\nSUCCESS: All ${res.num_links} links were resolved in ${res.std_path}\n`);
+    } else {
+        console.log(`\nWARNING: ${res.num_unfound} links were not resolved in ${res.std_path}\n`);
+    }
+    
     console.log("Press any key to view the test plan...");
     await press_any_key();
 
@@ -284,7 +310,7 @@ async function _testplan(subj_path, std_path, eval_id) {
     console.log("* TEST PLAN *");
     console.log("*************");
 
-    Array.from(res.entries()).forEach((keyval) => {
+    Array.from(res.map.entries()).forEach((keyval) => {
         console.log(`\n${keyval[0]}`);
 
         keyval[1].forEach((node_info) => {

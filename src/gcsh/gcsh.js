@@ -347,14 +347,14 @@ async function _testplan(subj_path, std_path, eval_id) {
 // and store test results.
 function _testplan_to_gs_workbook(tp, std_path) {
     // Collect all the node numbers in the testplan hashmap into a set
-    const node_nums = new Set(Array.from(tp.values()).flat().map(obj => obj.node_num));
+    const node_nums = new Set(Array.from(tp.map.values()).flat().map(obj => obj.node_num));
     
     // Load the standard and transform to a Gcntree 
     const doc = fs.readFileSync(std_path, {encoding: "utf8"});
     const ymldoc = yaml.safeLoad(doc, "utf8");
     const doc_tree = Gcntree.from_json_doc(ymldoc, Gcntree.trans.to_obj);
     
-    // Now just DFS inorder through the standard and walk up as necessary to collect our columns
+    // Now just DFS inorder traversal through the standard and walk up as necessary to collect our columns
     // Abandon all hope of generality here, we're coupled as tightly as possible to the DS
     let n = 0;
      
@@ -368,7 +368,7 @@ function _testplan_to_gs_workbook(tp, std_path) {
                 pnode = pnode.parent;
             }
             
-            // Now that we found the parent evaluation, we have to DFS inorder to find its node number
+            // Now that we found the parent evaluation, do a DFS inorder traversal to find its node number
             let m = 0;
 
             const parent_eval_uuid = doc_tree.dfs((node, data) => {
@@ -409,9 +409,30 @@ function _testplan_to_gs_workbook(tp, std_path) {
         {pixelSize: 600}
     ];
      
-    // TODO: we need the names of each tent to be tested in this testplan, so we need to develop the testplan res
-    // data structure which returns metadata along with the hashmap of standard parts (and then move all the
-    // console logging out of gcapp and to the testplan function above)
+    // Collect the names of each tent to be tested in this testplan
+    const tents = tp.is_group ? tp.subj.tents.map(tent => tent.name) : [tp.subj.name];
+    
+    // Prepend the names of each tent to the top of the workbook
+    const tent_row = tents.map((tent) => {
+        return {
+            userEnteredValue: {stringValue: tent},
+            userEnteredFormat: {
+                wrapStrategy: "WRAP"
+            }
+        };
+    });
+    
+    tent_row.unshift(...(Array(5).fill({userEnteredValue: {stringValue: ""}})));
+
+    rows.unshift([
+        {values: []},
+        {values: tent_row},
+        {values: []},
+        {values: []},
+        {values: []},
+        {values: []},
+        {values: []}
+    ]);
 
     const val = {
         properties: {

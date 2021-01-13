@@ -422,16 +422,18 @@ function _testplan_to_gs_workbook(tp, std_path) {
         };
     });
     
-    tent_row.unshift(...(Array(5).fill({userEnteredValue: {stringValue: ""}})));
+    const five_space = Array(5).fill({userEnteredValue: {stringValue: ""}});
 
     rows.unshift([
-        {values: []},
-        {values: tent_row},
-        {values: []},
-        {values: []},
-        {values: []},
-        {values: []},
-        {values: []}
+        {values: five_space.concat([{userEnteredValue: {stringValue: "Sample #"}}])},
+        {values: five_space.concat([{userEnteredValue: {stringValue: "Brand & Model"}}].concat(tent_row))},
+        {values: five_space.concat([{userEnteredValue: {stringValue: "Protocol"}}])},
+        {values: five_space.concat([{userEnteredValue: {stringValue: "Single-Mesh"}}])},
+        {values: five_space.concat([{userEnteredValue: {stringValue: "New Model"}}])},
+        {values: five_space.concat([{userEnteredValue: {stringValue: "Availability"}}])},
+        {values: five_space.concat([{userEnteredValue: {stringValue: "Status"}}])},
+        {values: five_space.concat([{userEnteredValue: {stringValue: "Batch Number"}}])},
+        {values: five_space}
     ]);
 
     const val = {
@@ -454,6 +456,18 @@ function _testplan_to_gs_workbook(tp, std_path) {
                             }
                         ],
                         columnMetadata: column_metadata
+                    }
+                ]
+            },
+            {
+                properties: {
+                    title: "VERTICAL"
+                },
+                data: [
+                    {
+                        startRow: 0,
+                        startColumn: 0,
+                        rowData: rows 
                     }
                 ]
             }

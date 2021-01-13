@@ -423,18 +423,54 @@ function _testplan_to_gs_workbook(tp, std_path) {
     });
     
     const five_space = Array(5).fill({userEnteredValue: {stringValue: ""}});
-
-    rows.unshift([
+    
+    // TODO: These labels are a subset of the labels present in the example workbook, because the example
+    // workbook has additional labels that are clearly specific to wireless routers (protocol, mesh, etc.) 
+    // What's the complete set of evergreen labels to include?
+    rows.unshift(
+        {values: five_space.concat([{userEnteredValue: {stringValue: "Pedigree"}}])},
         {values: five_space.concat([{userEnteredValue: {stringValue: "Sample #"}}])},
         {values: five_space.concat([{userEnteredValue: {stringValue: "Brand & Model"}}].concat(tent_row))},
-        {values: five_space.concat([{userEnteredValue: {stringValue: "Protocol"}}])},
-        {values: five_space.concat([{userEnteredValue: {stringValue: "Single-Mesh"}}])},
-        {values: five_space.concat([{userEnteredValue: {stringValue: "New Model"}}])},
         {values: five_space.concat([{userEnteredValue: {stringValue: "Availability"}}])},
         {values: five_space.concat([{userEnteredValue: {stringValue: "Status"}}])},
         {values: five_space.concat([{userEnteredValue: {stringValue: "Batch Number"}}])},
         {values: five_space}
-    ]);
+    );
+    
+    // Now build the vertically formatted sheet, which unfortunately is not just a transpose :(
+    const ten_space = Array(10).fill({userEnteredValue: {stringValue: ""}});
+    
+    const labels = [
+        {userEnteredValue: {stringValue: "Pedigree"}}, 
+        {userEnteredValue: {stringValue: "Sample #"}}, 
+        {userEnteredValue: {stringValue: "Brand & Model"}},
+        {userEnteredValue: {stringValue: "Availability"}},
+        {userEnteredValue: {stringValue: "Status"}},
+        {userEnteredValue: {stringValue: "Batch Number"}}
+    ];
+
+    const rows_v = [
+        {values: ten_space.concat(mat.map(item => {return {userEnteredValue: {numberValue: item[0]}}}))},
+        {values: ten_space.concat(mat.map(item => {return {userEnteredValue: {numberValue: item[1]}}}))},
+        {values: ten_space.concat(mat.map(item => {return {userEnteredValue: {numberValue: item[2]}}}))},
+        {values: ten_space.concat(mat.map(item => {return {userEnteredValue: {stringValue: item[3]}, userEnteredFormat: {wrapStrategy: "WRAP"}}}))},
+        {values: ten_space.concat(mat.map(item => {return {userEnteredValue: {stringValue: item[4]}, userEnteredFormat: {wrapStrategy: "WRAP"}}}))},
+        {values: ten_space},
+        {values: labels} 
+    ].concat(tents.map((tent) => {
+        return {
+            values: [
+                {userEnteredValue: {stringValue: ""}},
+                {userEnteredValue: {stringValue: ""}},
+                {
+                    userEnteredValue: {stringValue: tent},
+                    userEnteredFormat: {
+                        wrapStrategy: "WRAP"
+                    }
+                }
+            ]
+        };
+    }));
 
     const val = {
         properties: {
@@ -467,7 +503,7 @@ function _testplan_to_gs_workbook(tp, std_path) {
                     {
                         startRow: 0,
                         startColumn: 0,
-                        rowData: rows 
+                        rowData: rows_v
                     }
                 ]
             }

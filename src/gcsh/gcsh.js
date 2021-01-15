@@ -270,11 +270,12 @@ function _io() {
     });   
 }
 
-// TODO: eval_id does nothing here, we always pass the "datasec" test evaluation set
-async function _testplan(subj_path, std_path, eval_id) {
-    // Just pass the test evaluation set we noobishly created in the global scope
-    const eval_set = data_security_eval;
-    
+// TODO: actually apply the evaluation set specified by eval_path
+async function _testplan(subj_path, std_path, eval_path) {
+    // TODO: if eval_path is specified, load and validate the specified evaluation set
+    // for now, we just pass no set
+    const eval_set = null;
+
     const res = Gcapp.testplan_ext(subj_path, std_path, eval_set);
     
     if (res.is_group) {
@@ -283,19 +284,22 @@ async function _testplan(subj_path, std_path, eval_id) {
         console.log(`\nENTITY: '${res.subj.name}'`);
     }
 
-    console.log(`EVALUATION SET: '${res.eval_set.name}'`);
+    const es_name = eval_set === null ? "None" : "'" + res.eval_set.name + "'";
+    const es_no_apply = eval_set === null ? 0 : Array.from(res.eval_set.set.values().length - res.selected_evals);
+
+    console.log(`EVALUATION SET: ${es_name}`);
     console.log(`STANDARD: ${res.std_path}`);
     
     console.log(`VECTORS: ${res.vecs_to_evaluate.length} ${res.is_group ? "in common" : ""}`);
     // console.log(`TOTAL EVALUATIONS REQUIRED: ${total_evals}\n`);
 
-    console.log(`Evaluation set '${res.eval_set.name}' selects ${res.selected_evals} of ${res.total_evals} possible evaluations:\n`); 
+    console.log(`\nEvaluation set ${es_name} selects ${res.selected_evals} of ${res.total_evals} possible evaluations:\n`); 
     
     res.vecs_to_evaluate.forEach((vec, i) => {
         console.log(`${vec} => ${res.vec_coverage[i].reduce((acc, bool) => { return acc + (bool ? 1 : 0)}, 0)}/${res.vec_coverage[i].length}`);
     });
 
-    console.log(`\n'${res.eval_set.name}' includes ${Array.from(res.eval_set.set.values()).length - res.selected_evals} evaluations which do not apply to '${res.subj.name}'`);
+    console.log(`\nEvaluation set ${es_name} includes ${es_no_apply} evaluations which do not apply to '${res.subj.name}'`);
     
     if (res.num_unfound === 0) {
         console.log(`\nSUCCESS: All ${res.num_links} links were resolved in ${res.std_path}\n`);
@@ -579,7 +583,7 @@ function _help() {
     
     console.log(`${C.BRIGHT}quit\n${C.RESET}Exit\n\n`);
     
-    console.log(`${C.BRIGHT}testplan [subject path] [std path] [eval ID]\n${C.RESET}Show the suite of evaluations that must be performed for a given test subject (either a group or a single testable entity), standard, and evaluation set (using the default vector mapping)\n\n`);
+    console.log(`${C.BRIGHT}testplan [subject path] [std path] [eval path]\n${C.RESET}Generate the suite of evaluations that must be performed for a given testable entity or group of testable entities, standard, and evaluation set (using the default vector mapping); specifying no evaluation set will apply the entire standard\n\n`);
     
     console.log(`${C.BRIGHT}vecs\n${C.RESET}Display the vector names known to this version of Ground Control\n\n`);
 }
@@ -587,8 +591,7 @@ function _help() {
 // TODO: in "the future," leval would grab all the evaluation sets in the currently defined data store... for now, we're just
 // faking some by creating some Gceval objects in the global scope
 function _leval() {
-    console.log("ID\t\t\t\t\t\t\tNAME");
-    console.log("datasec\t\t\t\t\t\t\tData Security");
+    console.log("Oops! I don't do anything yet. Email noah.levenson@consumer.org about this!");
 }
 
 function _lent() {

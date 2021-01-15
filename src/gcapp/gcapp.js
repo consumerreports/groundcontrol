@@ -72,7 +72,8 @@ Gcapp.load_group_ext = function(path) {
 }
 
 // Generate a testplan from data provded as external YML files
-// Returns a Map where the keys are vector names and the values are arrays where each element is a part of a standard
+// Returns a Gcapp_tp_res object which wraps a Map where the keys are vector names and 
+// the values are arrays where each element is a part of a standard
 // TODO: accept a path to an external evaluation set file, not an actual evaluation set object
 Gcapp.testplan_ext = function(subj_path, std_path, eval_set) {
     // TODO: This function should prob let you specify a vector mapping? The help text currently says it
@@ -109,7 +110,7 @@ Gcapp.testplan_ext = function(subj_path, std_path, eval_set) {
     
     const vec_coverage = vecs_to_evaluate.map((vec) => {
         return vec_map.get_links(vec).map((node_hash) => {
-            if (eval_set.set.has(node_hash)) {
+            if (eval_set === null || eval_set.set.has(node_hash)) {
                 return true;
             }
 
@@ -130,7 +131,7 @@ Gcapp.testplan_ext = function(subj_path, std_path, eval_set) {
     // Associate selected hashes with their vec names   
     const a = new Map(vecs_to_evaluate.map((vec) => {
         return vec_map.get_links(vec).filter((hash) => {
-            return eval_set.set.has(hash);
+            return eval_set === null || eval_set.set.has(hash);
         }).map((hash) => {
             return [hash, vec];
         });

@@ -4,6 +4,7 @@ const yaml = require("js-yaml");
 const fs = require("fs");
 const p = require("path");
 const gc = require("../gcutil/gcconfig.js");
+const Gceval = require("../gcstd/gceval.js");
 const gctax = require("../gctax/gctax.js");
 const Gcapp_tp_res = require("./gcapp_tp_res.js");
 const Gctent = require("../gctax/gctent.js");
@@ -31,6 +32,32 @@ Gcapp.get_node_hash = function(std, n) {
 
         count += 1;
     })[0];
+}
+
+// Convenience function to create an evaluation set from a standard (as a Gcntree) and a list of node numbers
+// Returns a Gceval object
+Gcapp.make_eval_set = function(std, nums = [], name = "") {
+    if (nums.length === 0) {
+        throw new Error("You must specify at least one node to create an evaluation set");
+    }
+
+    return new Gceval({std: std, nums: nums, name: name});
+}
+
+// Write an evaluation set (as a Gceval object) to disk in YML format
+// Returns the path to the output file as a string
+Gcapp.write_eval_set_ext = function(es, notes) {
+    const output = {
+        eval: es.name,
+        notes: notes,
+        set: Array.from(es.set.values()).map(hash => Object.fromEntries([["hash", hash]]))
+    };
+    
+    const output_path = `${process.cwd()}/../../out/${Date.now()}.yml`;
+    
+    // TODO: what happens on error?
+    fs.writeFileSync(output_path, yaml.dump(output));
+    return output_path;
 }
 
 // Load a testable entity from an external YML file, validate its structure and vec definitions

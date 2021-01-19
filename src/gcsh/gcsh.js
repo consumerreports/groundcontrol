@@ -41,6 +41,7 @@ const GRAMMAR = new Map([
     ["quit", _quit],
     ["checkset", _checkset],
     ["clear", _clear],
+    ["esmake", _esmake],
     ["fnum", _fnum],
     ["grinfo", _grinfo],
     ["help", _help],
@@ -115,58 +116,20 @@ async function _on_input(input) {
 
 // TODO: delete me!
 async function _debug() {
-    // https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/sheets#Sheet
+   
+}
 
-    // https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/cells#CellData
+function _esmake(std_path, ...nums) {
+    if (!std_path) {
+        throw new Error("Missing path");
+    }
 
-    // https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/other#ExtendedValue
+    const doc = fs.readFileSync(std_path, {encoding: "utf8"});
+    const ymldoc = yaml.safeLoad(doc, "utf8");
+    const doc_tree = Gcntree.from_json_doc(ymldoc, Gcntree.trans.to_obj);
 
-     const val = {
-        properties: {
-            title: "Hi i'm a test spreadsheet"
-        }, 
-        sheets: [
-            {
-                properties: {
-                    title: "i'm a test sheet title"
-                },
-                data: [
-                    {
-                        startRow: 0,
-                        startColumn: 0,
-                        rowData: [
-                            {
-                                values: [
-                                    {userEnteredValue: {stringValue: "Test cell foo"}},
-                                    {userEnteredValue: {stringValue: "Test cell bar"}},
-                                    {userEnteredValue: {stringValue: "Test cell baz"}} 
-                                ]
-                            },
-                            {
-                                values: [
-                                    {userEnteredValue: {numberValue: 31337}},
-                                    {userEnteredValue: {numberValue: 0.31337}},
-                                    {userEnteredValue: {numberValue: 31337.31337}}
-                                ]
-                            }
-                        ],
-                        rowMetadata: [
-                            {
-                             
-                            }
-                        ],
-                        columnMetadata: [
-                            {
-
-                            }
-                        ]
-                    }
-                ]
-            }
-        ]
-     };
-
-    const res = await app.data_modules[0].put("imakey", val);
+    const es = Gcapp.make_eval_set(doc_tree, nums.map(num => parseInt(num)), "Untitled Evaluation Set");
+    console.log(`Success! Output: ${Gcapp.write_eval_set_ext(es, "Created by gcsh esmake")}`);
 }
 
 // Display the meaningful parts of a given standard schema. These are the parts you reference for fnum, and eventually
@@ -560,6 +523,8 @@ function _help() {
     console.log("+-----------+\n");
     console.log(`${C.BRIGHT}checkset [eval ID] [path]\n${C.RESET}Apply an evaluation set against an external standard file (in YAML format) and show resolved links\n\n`);
     console.log(`${C.BRIGHT}clear\n${C.RESET}Clear screen\n\n`);  
+
+    console.log(`${C.BRIGHT}esmake [std path] [node1] [node2] [node3] ...\n${C.RESET}Create a new evaluation set and write it to disk in YAML format\n\n`);
     
     console.log(`${C.BRIGHT}fnum [path] [schema ID] [part ID]\n${C.RESET}Show the enumerations for part of an external standard file (in YAML format)\n\n`);
     

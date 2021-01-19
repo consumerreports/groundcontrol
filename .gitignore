@@ -2,3 +2,5 @@
 node_modules
 src/gcenv/*
 !src/gcenv/.gitkeep
+out/*
+!out/.gitkeep

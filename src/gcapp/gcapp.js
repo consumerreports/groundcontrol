@@ -41,7 +41,7 @@ Gcapp.make_eval_set = function(std, nums = [], name = "") {
         throw new Error("You must specify at least one node to create an evaluation set");
     }
 
-    return new Gceval({std: std, nums: nums, name: name});
+    return Gceval.from_nodes({std: std, nums: nums, name: name});
 }
 
 // Write an evaluation set (as a Gceval object) to disk in YML format
@@ -58,6 +58,24 @@ Gcapp.write_eval_set_ext = function(es, notes) {
     // TODO: what happens on error?
     fs.writeFileSync(output_path, yaml.dump(output));
     return output_path;
+}
+
+// Load an evaluation set from an external YML file, validate its structure
+// Returns the deserialized evaluation set as a Gceval object
+Gcapp.load_eval_set_ext = function(path) {
+    // TODO: what happens if errors?
+    const doc = fs.readFileSync(path, {encoding: "utf8"});
+    const json = yaml.safeLoad(doc, "utf8");
+    
+    if (!Gceval.is_valid(json)) {
+        throw new Error(`${path} is not a valid evaluation set`);
+    }
+    
+    // TODO: makes you wonder if Gceval objects should have a from_json constructor, and if the transformation
+    // in write_eval_set_ext above should become a to_json method...
+    const es = new Gceval({name: json.eval});
+    json.set.forEach(hash => es.set.add(hash.hash));
+    return es;
 }
 
 // Load a testable entity from an external YML file, validate its structure and vec definitions

@@ -95,9 +95,6 @@ const doc = fs.readFileSync("../../temp/ds_103020.yml", {encoding: "utf8"});
 const ymldoc = yaml.safeLoad(doc, "utf8");
 const doc_tree = Gcntree.from_json_doc(ymldoc, Gcntree.trans.to_obj);
 
-// Here's a gceval object, "datasec", that we can use for testing
-const data_security_eval = new Gceval({name: "Data Security", std: doc_tree, nums: [333, 336, 339, 342, 345, 348, 352, 355, 358, 361, 364, 369, 372, 375, 378, 386, 394, 404, 412, 415, 418, 421, 424, 427, 435]});
-
 async function _on_input(input) {
 	const tok = input.trim().split(" ");
 	const f = GRAMMAR.get(tok[0]);
@@ -115,8 +112,8 @@ async function _on_input(input) {
 }
 
 // TODO: delete me!
-async function _debug() {
-   
+async function _debug(path) {
+    console.log(Gcapp.load_eval_set_ext(path)); 
 }
 
 function _esmake(std_path, ...nums) {
@@ -521,7 +518,7 @@ function _help() {
     console.log("+-----------+");
     console.log("| gsch help |");
     console.log("+-----------+\n");
-    console.log(`${C.BRIGHT}checkset [eval ID] [path]\n${C.RESET}Apply an evaluation set against an external standard file (in YAML format) and show resolved links\n\n`);
+    console.log(`${C.BRIGHT}checkset [eval set path] [std path]\n${C.RESET}Apply an evaluation set against an external standard file (in YAML format) and show resolved links\n\n`);
     console.log(`${C.BRIGHT}clear\n${C.RESET}Clear screen\n\n`);  
 
     console.log(`${C.BRIGHT}esmake [std path] [node1] [node2] [node3] ...\n${C.RESET}Create a new evaluation set and write it to disk in YAML format\n\n`);
@@ -698,22 +695,15 @@ function _fvalid(path, id) {
     }
 }
 
-function _checkset(id, path) {
-    if (!path) {
+function _checkset(eval_path, std_path) {
+    if (!eval_path || !std_path) {
         throw new Error("Missing path");
     }
 
-    // Lol, we're faking this one evaluation set, so every other evaluation set ID is currently not found
-    if (id !== "datasec") {
-        throw new Error("Invalid evaluation set ID");
-    }
-    
-    // TODO: the data_security_eval object is defined in the global scope for demo purposes,
-    // it's the Gceval object we imagine being associated with the ID 'datasec'
-    const ev = data_security_eval;
-    
     try {
-        const doc = fs.readFileSync(path, {encoding: "utf8"});
+        const ev = Gcapp.load_eval_set_ext(eval_path);
+    
+        const doc = fs.readFileSync(std_path, {encoding: "utf8"});
         const doctree = Gcntree.from_json_doc(yaml.safeLoad(doc, "utf8"), Gcntree.trans.to_obj);
         
         const parts = new Map();
@@ -734,23 +724,23 @@ function _checkset(id, path) {
         });
         
         if (!homogeneous) {
-            throw new Error(`Illegal evaluation set -- ${id} is non-homogeneous`);
+            throw new Error(`Illegal evaluation set -- ${eval_path} is non-homogeneous`);
         }
 
         Array.from(parts.values()).forEach((part) => {
             console.log(part);
         });
         
-        console.log(`${id} selects ${parts.size} of ${n} total nodes in ${path}`);
+        console.log(`${eval_path} selects ${parts.size} of ${n} total nodes in ${std_path}`);
         
         // unresolved holds any node hashes specified by the evaluation set that we didn't find in the standard
         const found_hashes = Array.from(parts.keys());
         const unresolved = Array.from(ev.set.values()).filter(node_hash => !found_hashes.includes(node_hash));
 
         if (unresolved.length === 0) {
-            console.log(`SUCCESS: All ${ev.set.size} links were resolved in ${path}!`);
+            console.log(`SUCCESS: All ${ev.set.size} links were resolved in ${std_path}!`);
         } else {
-            console.log(`WARNING: ${unresolved} links could not be resolved in ${path}!`);
+            console.log(`WARNING: ${unresolved} links could not be resolved in ${std_path}!`);
         }
     } catch(err) {
         throw new Error(err.message);

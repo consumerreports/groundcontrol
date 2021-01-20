@@ -1,22 +1,27 @@
 "use strict";
 
+const Validator = require("jsonschema").Validator;
+const v = new Validator();
 const gc = require("../gcutil/gcconfig.js");
 const gcutil = require("../gcutil/gcutil.js");
 const Gcntree = require("../gctypes/gcntree/gcntree.js");
+const gceval_schema = require("./schemas/gceval_schema.js");
 
-// std must be a Gcntree for a standard, nums must be an array of node numbers
-// this constructor is based on what we think a nice interface would be like to do this using a mature product:
-// you'd probably see a standard in the UI, with all its nodes color coded by its role ("part") in the schema
-// and you could click to select a set of homogenous nodes
-// TODO: we probably shouldn't allow you to derive a Gceval from an incorrect standard... 
-function Gceval({std = null, nums = [], name = ""} = {}) {
+// The default constructor creates an "empty" Gceval object
+function Gceval({name} = {}) {
+    this.name = name;
+    this.set = new Set();
+}
+
+// Alternate constructor / factory function to create a Gceval object from a standard and a list of node numbers
+// TODO: we probably shouldn't let you derive a Gceval from an incorrect standard...
+Gceval.from_nodes = function({std = null, nums = [], name = ""} = {}) {
     // TODO: to validate or not to validate? if we check this, shouldn't we also make sure nums has > 0 elements, etc?
     if (!(std instanceof Gcntree)) {
         throw new Error("Argument 'std' must be a Gcntree");
     }
     
-    this.name = name;
-    this.set = new Set();
+    const es = new this({name: name});
     const tree_data = new Map();
     let n = 0;
     
@@ -36,8 +41,16 @@ function Gceval({std = null, nums = [], name = ""} = {}) {
             throw new Error(`Node number ${num} invalid or out of range`);
         }
             
-        this.set.add(gc.DEFAULT_HASH(data));
+        es.set.add(gc.DEFAULT_HASH(data));
     });
+    
+    return es;
+}
+
+// TODO: maybe we should perform some superficial validation of the hashes too? we could try to address this in the Gceval schema too...
+Gceval.is_valid = function(es) {
+    const res = v.validate(es, gceval_schema);
+    return res.errors.length > 0 ? false : true;
 }
 
 module.exports = Gceval;

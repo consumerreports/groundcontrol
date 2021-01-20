@@ -12,7 +12,7 @@ const gceval_schema = {
         },
         "set": {
             "required": true,
-            "type": "array":,
+            "type": "array",
             "items": {
                 "type": "object",
                 "properties": {

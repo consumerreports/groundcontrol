@@ -119,8 +119,7 @@ Gcapp.load_group_ext = function(path) {
 // Generate a testplan from data provded as external YML files
 // Returns a Gcapp_tp_res object which wraps a Map where the keys are vector names and 
 // the values are arrays where each element is a part of a standard
-// TODO: accept a path to an external evaluation set file, not an actual evaluation set object
-Gcapp.testplan_ext = function(subj_path, std_path, eval_set) {
+Gcapp.testplan_ext = function(subj_path, std_path, eval_path) {
     // TODO: This function should prob let you specify a vector mapping? The help text currently says it
     // uses the default vector mapping... for now, let's just load the vector map we created in the global scope for testing
     const vec_map = cr_vec_map;
@@ -129,6 +128,8 @@ Gcapp.testplan_ext = function(subj_path, std_path, eval_set) {
         throw new Error("Missing path");
     }
 
+    const eval_set = eval_path ? Gcapp.load_eval_set_ext(eval_path) : null;
+    
     // Deserialize the file for the test subject and determine if it's a tent or a group
     // TODO: this duplicates the validation that occurs in the group and tent loaders, do we care?
     const subj_doc = fs.readFileSync(subj_path, {encoding: "utf8"});

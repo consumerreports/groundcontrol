@@ -230,13 +230,8 @@ function _io() {
     });   
 }
 
-// TODO: actually apply the evaluation set specified by eval_path
 async function _testplan(subj_path, std_path, eval_path) {
-    // TODO: if eval_path is specified, load and validate the specified evaluation set
-    // for now, we just pass no set
-    const eval_set = null;
-
-    const res = Gcapp.testplan_ext(subj_path, std_path, eval_set);
+    const res = Gcapp.testplan_ext(subj_path, std_path, eval_path);
     
     if (res.is_group) {
         console.log(`\nGROUP: '${res.subj.name}' (${res.subj.tents.map(tent => tent.name).join(", ")})`);
@@ -244,8 +239,8 @@ async function _testplan(subj_path, std_path, eval_path) {
         console.log(`\nENTITY: '${res.subj.name}'`);
     }
 
-    const es_name = eval_set === null ? "None" : "'" + res.eval_set.name + "'";
-    const es_no_apply = eval_set === null ? 0 : Array.from(res.eval_set.set.values().length - res.selected_evals);
+    const es_name = !eval_path ? "None" : "'" + res.eval_set.name + "'";
+    const es_no_apply = !eval_path ? 0 : Array.from(res.eval_set.set.values()).length - res.selected_evals;
 
     console.log(`EVALUATION SET: ${es_name}`);
     console.log(`STANDARD: ${res.std_path}`);

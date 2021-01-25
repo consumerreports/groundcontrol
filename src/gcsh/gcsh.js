@@ -1,6 +1,6 @@
 "use strict";
 
-// In the future, gcsh should call high level API functions from Gcapp, which should call lower level
+// Gcapp.dhashgcsh should call high level API functions from Gcapp, which should call lower level
 // functions from gcstd and gctax... but since we're not implementing a data I/O layer for the prototype,
 // we're not really implementing any of the modules the way they're meant to be implemented. so all
 // the gcsh functions are just stubs that will need to be replaced...
@@ -16,11 +16,8 @@ const ds_schema = require("../../temp/schemas/ds.js");
 const gcgroup_schema = require("../gctax/schemas/gcgroup_schema.js");
 const gctent_schema = require("../gctax/schemas/gctent_schema.js");
 
-const gc = require("../gcutil/gcconfig.js");
 const Gcapp = require("../gcapp/gcapp.js");
 const gcutil = require("../gcutil/gcutil.js");
-const gcstd = require("../gcstd/gcstd.js");
-const gctax = require("../gctax/gctax.js");
 const Gcntree = require("../gctypes/gcntree/gcntree.js");
 const Gceval = require("../gcstd/gceval.js");
 
@@ -137,9 +134,9 @@ function _parts(id) {
         throw new Error("Invalid schema ID");
     }
     
-    // TODO: to avoid presenting the user with every single part of a standard schema, we  hypothesize that the 
+    // TODO: to avoid presenting the user with every single part of a standard schema, we hypothesize that the 
     // "meaningful" parts of a standard schema are its nonscalar values, see get_nonscalar_keys for a deeper discussion
-    const keys = gcstd.get_nonscalar_keys(ds_schema);
+    const keys = Gcapp.get_nonscalar_keys(ds_schema);
     
     if (keys.length === 0) {
         console.log("No meaningful parts found!");
@@ -165,7 +162,7 @@ function _fnum(path, sch_id, part_id) {
     
     try {
         // First get the prop name for the part code we're interested in
-        const keys = gcstd.get_nonscalar_keys(ds_schema);
+        const keys = Gcapp.get_nonscalar_keys(ds_schema);
         
         if (part_id < 0 || part_id > keys.length - 1) {
             throw new Error(`Part ID out of range for standard schema ${sch_id}`);
@@ -331,7 +328,7 @@ function _testplan_to_gs_workbook(tp, std_path) {
             let m = 0;
 
             const parent_eval_uuid = doc_tree.dfs((node, data) => {
-                if (gc.DEFAULT_HASH(node.data) === gc.DEFAULT_HASH(pnode.data)) {
+                if (Gcapp.dhash(node.data) === Gcapp.dhash(pnode.data)) {
                     data.push(m);
                 }
 
@@ -482,7 +479,7 @@ function _clear() {
 }
 
 function _vecs() {
-    gctax.get_vector_names().forEach((vec) => {
+    Gcapp.get_vector_names().forEach((vec) => {
         console.log(vec);
     });
 }
@@ -502,7 +499,7 @@ function _grinfo(path) {
         console.log(`(${tent.vecs.length} vectors)\n`);
     });
     
-    const common = gctax.get_common_vecs(group.tents);
+    const common = Gcapp.get_common_vecs(group.tents);
     console.log(`This group contains ${group.tents.length} testable entities which share ${common.length} common vectors:\n`);
     common.forEach(str => console.log(str));
 }
@@ -573,11 +570,11 @@ function _tree_node_compare(a, b) {
     const bad_nodes = [];
 
     a.dfs((node, data) => {
-        const hasha = gc.DEFAULT_HASH(node.data);
+        const hasha = Gcapp.dhash(node.data);
         let found = false;
         
         b.dfs((node, data) => {
-            const hashb = gc.DEFAULT_HASH(node.data);
+            const hashb = Gcapp.dhash(node.data);
             
             if (hasha === hashb) {
                 found = true;
@@ -623,8 +620,8 @@ function _fcmp(path1, path2, id) {
         const doca_tree = Gcntree.from_json_doc(ymldoca, Gcntree.trans.to_obj);
         const docb_tree = Gcntree.from_json_doc(ymldocb, Gcntree.trans.to_obj);
             
-        const hash1 = gc.DEFAULT_HASH(doca_tree);
-        const hash2 = gc.DEFAULT_HASH(docb_tree);
+        const hash1 = Gcapp.dhash(doca_tree);
+        const hash2 = Gcapp.dhash(docb_tree);
 
          if (hash1 === hash2) {
             console.log(`Files are identical! SHA256: ${hash1}`);
@@ -705,7 +702,7 @@ function _checkset(eval_path, std_path) {
         let n = 0;
 
         doctree.dfs((node, data) => {
-            const node_hash = gc.DEFAULT_HASH(node.data);
+            const node_hash = Gcapp.dhash(node.data);
 
             if (ev.set.has(node_hash)) {
                 parts.set(node_hash, node.data);

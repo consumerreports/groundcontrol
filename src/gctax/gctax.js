@@ -2,10 +2,12 @@
 
 const gc = require("../gcutil/gcconfig.js");
 
+// You probably shouldn't call this directly - prefer the Gcapp convenience wrapper
 function get_vector_names() {
     return Object.keys(gc.VECTORS);
 }
 
+// You probably shouldn't call this directly - prefer the Gcapp convenience wrapper
 // Get the intersection of the sets of vectors for list of Gctent objects 'tents' 
 function get_common_vecs(tents) {
     const vectors = new Map();

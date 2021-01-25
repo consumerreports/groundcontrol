@@ -6,6 +6,7 @@ const p = require("path");
 const gc = require("../gcutil/gcconfig.js");
 const Gceval = require("../gcstd/gceval.js");
 const gctax = require("../gctax/gctax.js");
+const gcstd = require("../gcstd/gcstd.js");
 const Gcapp_tp_res = require("./gcapp_tp_res.js");
 const Gctent = require("../gctax/gctent.js");
 const Gcgroup = require("../gctax/gcgroup.js");
@@ -21,13 +22,34 @@ function Gcapp({data_modules = []} = {}) {
     this.id = gc.DEFAULT_HASH(Date.now());
 }
 
+// Convenience wrapper - hash a value using the systemwide default hash function
+Gcapp.dhash = function(data) {
+    return gc.DEFAULT_HASH(data);
+}
+
+// Convenience wrapper - return a list of keys corresponding to the nonscalar values in a standard 
+// sch must be a jsonschema schema for a standard
+Gcapp.get_nonscalar_keys = function(sch) {
+    return gcstd.get_nonscalar_keys(sch);
+}
+
+// Convenience wrapper - return the vector vocabulary known to this version of Ground Control
+Gcapp.get_vector_names = function() {
+    return gctax.get_vector_names();
+}
+
+// Convenience wrapper - return the intersection of the sets of vectors for a list of Gctent objects
+Gcapp.get_common_vecs = function(tent_list) {
+    return gctax.get_common_vecs(tent_list);
+}
+
 // Compute the hash of node number n in a Gcntree
 Gcapp.get_node_hash = function(std, n) {
     let count = 0;
 
     return std.dfs((node, data) => {
         if (count === n) {
-            data.push(gc.DEFAULT_HASH(node.data));
+            data.push(Gcapp.dhash(node.data));
         }
 
         count += 1;
@@ -152,7 +174,7 @@ Gcapp.testplan_ext = function(subj_path, std_path, eval_path) {
     const ymldoc = yaml.safeLoad(doc, "utf8");
     const doc_tree = Gcntree.from_json_doc(ymldoc, Gcntree.trans.to_obj);
     
-    const vecs_to_evaluate = is_group ? gctax.get_common_vecs(subj.tents) : subj.vecs;
+    const vecs_to_evaluate = is_group ? this.get_common_vecs(subj.tents) : subj.vecs;
     
     const vec_coverage = vecs_to_evaluate.map((vec) => {
         return vec_map.get_links(vec).map((node_hash) => {
@@ -191,11 +213,11 @@ Gcapp.testplan_ext = function(subj_path, std_path, eval_path) {
     let n = 0;
 
     const found_hashes = doc_tree.dfs((node, data) => {
-        const vec_name = a.get(gc.DEFAULT_HASH(node.data));
+        const vec_name = a.get(Gcapp.dhash(node.data));
 
         if (vec_name) {
             b.get(vec_name).push({std_txt: node.data, node_num: n});
-            data.push(gc.DEFAULT_HASH(node.data));
+            data.push(Gcapp.dhash(node.data));
         }
 
         n += 1;

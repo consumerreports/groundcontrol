@@ -1,5 +1,6 @@
 "use strict";
 
+// You probably shouldn't call this function directly - prefer the gcapp convenience wrapper
 // Get all the keys for nonscalar parts of a standard, as defined by its schema in jsonschema format 
 // Hypothesis: the "meaningful" parts of a standard are described by the keys which map to its nonscalar values.
 // Put another way, the elements of nonscalar parts of a standard are likely to comprise the hierarchically

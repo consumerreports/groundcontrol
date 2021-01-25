@@ -2,6 +2,7 @@
 
 const gcutil = require("./gcutil.js");
 
+// You probably don't want to call this directly - use the Gcapp convenience wrapper
 const DEFAULT_HASH = function(data) {
     if (typeof data !== "string") {
         data = JSON.stringify(data);
@@ -10,7 +11,7 @@ const DEFAULT_HASH = function(data) {
     return gcutil.sha256(data);
 }
 
-// This is our controlled folksonomy of vector names
+// Our controlled vocabulary of vector names - don't fetch this directly, use Gcapp.get_vector_names
 const VECTORS = {
     UI_AUTH: "UI_AUTH",
     PW_COMPLEXITY: "PW_COMPLEXITY",

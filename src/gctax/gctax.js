@@ -1,6 +1,6 @@
 "use strict";
 
-const gc = require("../gcutil/gcconfig.js");
+const gc = require("../gcapp/gcapp_config.js");
 
 // You probably shouldn't call this directly - prefer the Gcapp convenience wrapper
 function get_vector_names() {

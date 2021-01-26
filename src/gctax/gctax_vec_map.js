@@ -2,12 +2,12 @@
 
 const gctax = require("./gctax.js");
 
-function Gcvec_map({name = ""} = {}) {
+function Gctax_vec_map({name = ""} = {}) {
     this.name = name;
     this.data = new Map(gctax.get_vector_names().map(name => [name, []]));
 }
 
-Gcvec_map.prototype.add_link = function(vec_name, data) {
+Gctax_vec_map.prototype.add_link = function(vec_name, data) {
     const list = this.data.get(vec_name);
 
     if (!list) {
@@ -17,8 +17,8 @@ Gcvec_map.prototype.add_link = function(vec_name, data) {
     list.push(data);
 }
 
-Gcvec_map.prototype.get_links = function(vec_name) {
+Gctax_vec_map.prototype.get_links = function(vec_name) {
     return this.data.get(vec_name);
 }
 
-module.exports = Gcvec_map;
+module.exports = Gctax_vec_map;

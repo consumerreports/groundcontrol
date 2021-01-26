@@ -13,13 +13,11 @@ const yaml = require("js-yaml");
 const fs = require("fs");
 const Validator = require("jsonschema").Validator;
 const ds_schema = require("../../temp/schemas/ds.js");
-const gcgroup_schema = require("../gctax/schemas/gcgroup_schema.js");
-const gctent_schema = require("../gctax/schemas/gctent_schema.js");
 
 const Gcapp = require("../gcapp/gcapp.js");
 const gcutil = require("../gcutil/gcutil.js");
 const Gcntree = require("../gctypes/gcntree/gcntree.js");
-const Gceval = require("../gcstd/gceval.js");
+const Gcstd_eval = require("../gcstd/gcstd_eval.js");
 
 const Gcstore_gs = require("../gcdata/store/gcstore_gs.js");
 
@@ -127,7 +125,7 @@ function _esmake(std_path, ...nums) {
 }
 
 // Display the meaningful parts of a given standard schema. These are the parts you reference for fnum, and eventually
-// when creating a Gceval object...
+// when creating a Gcstd_eval object...
 function _parts(id) {
     // Lol... since we're faking this one standard schema (ID: 'ds'), every other schema ID is currently not found
     if (id !== "ds") {
@@ -543,7 +541,7 @@ function _help() {
 }
 
 // TODO: in "the future," leval would grab all the evaluation sets in the currently defined data store... for now, we're just
-// faking some by creating some Gceval objects in the global scope
+// faking some by creating some Gcstd_eval objects in the global scope
 function _leval() {
     console.log("Oops! I don't do anything yet. Email noah.levenson@consumer.org about this!");
 }

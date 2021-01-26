@@ -2,20 +2,20 @@
 
 const Validator = require("jsonschema").Validator;
 const v = new Validator();
-const gc = require("../gcutil/gcconfig.js");
+const gc = require("../gcapp/gcapp_config.js");
 const gcutil = require("../gcutil/gcutil.js");
 const Gcntree = require("../gctypes/gcntree/gcntree.js");
-const gceval_schema = require("./schemas/gceval_schema.js");
+const gcstd_eval_schema = require("./schemas/gcstd_eval_schema.js");
 
-// The default constructor creates an "empty" Gceval object
-function Gceval({name} = {}) {
+// The default constructor creates an "empty" Gcstd_eval object
+function Gcstd_eval({name} = {}) {
     this.name = name;
     this.set = new Set();
 }
 
 // Alternate constructor / factory function to create a Gceval object from a standard and a list of node numbers
 // TODO: we probably shouldn't let you derive a Gceval from an incorrect standard...
-Gceval.from_nodes = function({std = null, nums = [], name = ""} = {}) {
+Gcstd_eval.from_nodes = function({std = null, nums = [], name = ""} = {}) {
     // TODO: to validate or not to validate? if we check this, shouldn't we also make sure nums has > 0 elements, etc?
     if (!(std instanceof Gcntree)) {
         throw new Error("Argument 'std' must be a Gcntree");
@@ -48,9 +48,9 @@ Gceval.from_nodes = function({std = null, nums = [], name = ""} = {}) {
 }
 
 // TODO: maybe we should perform some superficial validation of the hashes too? we could try to address this in the Gceval schema too...
-Gceval.is_valid = function(es) {
-    const res = v.validate(es, gceval_schema);
+Gcstd_eval.is_valid = function(es) {
+    const res = v.validate(es, gcstd_eval_schema);
     return res.errors.length > 0 ? false : true;
 }
 
-module.exports = Gceval;
+module.exports = Gcstd_eval;

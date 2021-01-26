@@ -1,6 +1,6 @@
 "use strict";
 
-const gcutil = require("./gcutil.js");
+const gcutil = require("../gcutil/gcutil.js");
 
 // You probably don't want to call this directly - use the Gcapp convenience wrapper
 const DEFAULT_HASH = function(data) {

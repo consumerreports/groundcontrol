@@ -1,8 +1,8 @@
-const gctent_schema = {
-    "id": "/gctent_schema",
+const gcstd_eval_schema = {
+    "id": "/gceval_schema",
     "type": "object",
     "properties": {
-        "tent": {
+        "eval": {
             "required": true,
             "type": "string"
         },
@@ -10,13 +10,13 @@ const gctent_schema = {
             "required": true,
             "type": "string"
         },
-        "vecs": {
+        "set": {
             "required": true,
             "type": "array",
             "items": {
                 "type": "object",
                 "properties": {
-                    "vec": {
+                    "hash": {
                         "required": true,
                         "type": "string"
                     }
@@ -28,4 +28,4 @@ const gctent_schema = {
     "additionalProperties": false
 };
 
-module.exports = gctent_schema;
+module.exports = gcstd_eval_schema;

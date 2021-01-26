@@ -3,17 +3,17 @@
 const yaml = require("js-yaml");
 const fs = require("fs");
 const p = require("path");
-const gc = require("../gcutil/gcconfig.js");
-const Gceval = require("../gcstd/gceval.js");
+const gc = require("./gcapp_config.js");
+const Gcstd_eval = require("../gcstd/gcstd_eval.js");
 const gctax = require("../gctax/gctax.js");
 const gcstd = require("../gcstd/gcstd.js");
 const Gcapp_tp_res = require("./gcapp_tp_res.js");
-const Gctent = require("../gctax/gctent.js");
-const Gcgroup = require("../gctax/gcgroup.js");
-const Gcvec_map = require("../gctax/gcvec_map.js");
+const Gctax_tent = require("../gctax/gctax_tent.js");
+const Gctax_group = require("../gctax/gctax_group.js");
+const Gctax_vec_map = require("../gctax/gctax_vec_map.js");
 const Gcntree = require("../gctypes/gcntree/gcntree.js");
-const gcgroup_schema = require("../gctax/schemas/gcgroup_schema.js");
-const gctent_schema = require("../gctax/schemas/gctent_schema.js");
+const gctax_group_schema = require("../gctax/schemas/gctax_group_schema.js");
+const gctax_tent_schema = require("../gctax/schemas/gctax_tent_schema.js");
 const Validator = require("jsonschema").Validator;
 
 // Gcapp constructor
@@ -38,7 +38,7 @@ Gcapp.get_vector_names = function() {
     return gctax.get_vector_names();
 }
 
-// Convenience wrapper - return the intersection of the sets of vectors for a list of Gctent objects
+// Convenience wrapper - return the intersection of the sets of vectors for a list of Gctax_tent objects
 Gcapp.get_common_vecs = function(tent_list) {
     return gctax.get_common_vecs(tent_list);
 }
@@ -57,16 +57,16 @@ Gcapp.get_node_hash = function(std, n) {
 }
 
 // Convenience function to create an evaluation set from a standard (as a Gcntree) and a list of node numbers
-// Returns a Gceval object
+// Returns a Gcstd_eval object
 Gcapp.make_eval_set = function(std, nums = [], name = "") {
     if (nums.length === 0) {
         throw new Error("You must specify at least one node to create an evaluation set");
     }
 
-    return Gceval.from_nodes({std: std, nums: nums, name: name});
+    return Gcstd_eval.from_nodes({std: std, nums: nums, name: name});
 }
 
-// Write an evaluation set (as a Gceval object) to disk in YML format
+// Write an evaluation set (as a Gcstd_eval object) to disk in YML format
 // Returns the path to the output file as a string
 Gcapp.write_eval_set_ext = function(es, notes) {
     const output = {
@@ -83,19 +83,19 @@ Gcapp.write_eval_set_ext = function(es, notes) {
 }
 
 // Load an evaluation set from an external YML file, validate its structure
-// Returns the deserialized evaluation set as a Gceval object
+// Returns the deserialized evaluation set as a Gcstd_eval object
 Gcapp.load_eval_set_ext = function(path) {
     // TODO: what happens if errors?
     const doc = fs.readFileSync(path, {encoding: "utf8"});
     const json = yaml.safeLoad(doc, "utf8");
     
-    if (!Gceval.is_valid(json)) {
+    if (!Gcstd_eval.is_valid(json)) {
         throw new Error(`${path} is not a valid evaluation set`);
     }
     
-    // TODO: makes you wonder if Gceval objects should have a from_json constructor, and if the transformation
+    // TODO: makes you wonder if Gcstd_eval objects should have a from_json constructor, and if the transformation
     // in write_eval_set_ext above should become a to_json method...
-    const es = new Gceval({name: json.eval});
+    const es = new Gcstd_eval({name: json.eval});
     json.set.forEach(hash => es.set.add(hash.hash));
     return es;
 }
@@ -107,17 +107,17 @@ Gcapp.load_tent_ext = function(path) {
     const doc = fs.readFileSync(path, {encoding: "utf8"});
     const json = yaml.safeLoad(doc, "utf8");
     
-    if (!Gctent.is_valid(json)) {
+    if (!Gctax_tent.is_valid(json)) {
         throw new Error(`${path} is not a valid testable entity`);
     }
     
-    const bad_vecs = Gctent.get_unknown_vecs(json);
+    const bad_vecs = Gctax_tent.get_unknown_vecs(json);
 
     if (bad_vecs.length > 0) {
         throw new Error(`Testable entity '${json.tent}' has unknown vector(s): ${bad_vecs.join(", ")}`);
     }
     
-    return new Gctent({name: json.tent, notes: json.notes, vecs: json.vecs.map(vec => vec.vec)});
+    return new Gctax_tent({name: json.tent, notes: json.notes, vecs: json.vecs.map(vec => vec.vec)});
 }
 
 // Load a group from an external YML file, validate its structure and constituent testable entities
@@ -127,11 +127,11 @@ Gcapp.load_group_ext = function(path) {
     const doc = fs.readFileSync(path, {encoding: "utf8"});
     const json = yaml.safeLoad(doc, "utf8");
     
-    if (!Gcgroup.is_valid(json)) {
+    if (!Gctax_group.is_valid(json)) {
         throw new Error(`${path} is not a valid group`);
     }
     
-    return new Gcgroup({
+    return new Gctax_group({
         name: json.group,
         notes: json.notes,
         tents: json.tent_paths.map(tent_path => Gcapp.load_tent_ext(`${p.dirname(path)}/${tent_path.tent_path}`))
@@ -160,9 +160,9 @@ Gcapp.testplan_ext = function(subj_path, std_path, eval_path) {
     let is_group = true;
     let subj = null;
 
-    if (v.validate(subj_obj, gcgroup_schema).errors.length === 0) {
+    if (v.validate(subj_obj, gctax_group_schema).errors.length === 0) {
         subj = Gcapp.load_group_ext(subj_path);
-    } else if (v.validate(subj_obj, gctent_schema).errors.length === 0) {
+    } else if (v.validate(subj_obj, gctax_tent_schema).errors.length === 0) {
         is_group = false;
         subj = Gcapp.load_tent_ext(subj_path);
     } else {
@@ -263,7 +263,7 @@ Gcapp.prototype.get_data_modules = function() {
 const doc = fs.readFileSync("../../temp/ds_103020.yml", {encoding: "utf8"});
 const ymldoc = yaml.safeLoad(doc, "utf8");
 const doc_tree = Gcntree.from_json_doc(ymldoc, Gcntree.trans.to_obj);
-const cr_vec_map = new Gcvec_map({name: "Consumer Reports Privacy & Security Testing"});
+const cr_vec_map = new Gctax_vec_map({name: "Consumer Reports Privacy & Security Testing"});
 cr_vec_map.add_link(gc.VECTORS.UI_AUTH, Gcapp.get_node_hash(doc_tree, 311));
 cr_vec_map.add_link(gc.VECTORS.PW_COMPLEXITY, Gcapp.get_node_hash(doc_tree, 357));
 cr_vec_map.add_link(gc.VECTORS.PW_COMPLEXITY, Gcapp.get_node_hash(doc_tree, 360));

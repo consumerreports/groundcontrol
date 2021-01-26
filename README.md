@@ -36,6 +36,24 @@ Ground Control can use the Google Sheets API to write and fetch data; this funct
 
 **Structuring test results data**: Since Ground Control was devised to navigate the evolving interactions between large amounts of highly mutable data (standards and testable entities), the core design philosophy is to keep as little state as possible. Thus, the Ground Control way to express high level combinations of data -- like testplans -- is as a function of some immutable state. Testplan generation, in math terms, is just a sequence of set operations: we find the intersection of the set of evaluations in a standard, the set of evaluations in an evaluation set, and the set of evaluations mapped to the vectors of a testable entity. Accordingly -- while test results are determined by an evaluation process that is external to Ground Control -- we think of the *structure* of any given test results are essentially a function over (standard, evaluation set, testable entity). So the Ground Control way to express a testplan is not as some unit of data describing the testplan, but rather, as a tuple of (standard, evaluation set, testable entity) to pass to the testplan function. The simplest and best way to model test results is probably as a hashmap, where each key is a reference to some node in a standard, and each value is the result recorded by testing personnel. However, this fails to associate test results with a specific testable entity, which is a key requirement. In the short term, our focus is on supporting legacy workbook generation. Workbooks, as mutable data structures which combine test results with cached parts of a standard and other metadata, are nice for humans to work with, but are unsuitable for structuring test results in the Ground Control system. So, a question remains: How do we structure and capture test results representing one "test event," which may be acquired by a human operator over some interval of time? 
 
+### Source layout & system design
+
+**gcapp**: High level API - to start a new instance of Ground Control, instantiate a Gcapp object
+
+**gcdata**: Data I/O abstraction, the goal is to define a simple I/O interface and write a lot of modules to support different ways to read/write data (local filesystem, databases, the cloud, etc.) if we enforce immutability, it gets enforced here
+
+**gcenv**: Drop your client secrets/tokens/environment stuff here, this is where all modules should look for it
+
+**gcsh**: Ground Control shell - a command line interface for GC
+
+**gcstd**: Standards module - data structures and functionality for defining and transforming standards, including standard evaluation sets
+
+**gctax**: Taxonomy module - data structures and functionality for defining and transforming a taxonomy of testable entities and exploring relationships between them
+
+**gctypes**: Core low level data structures and algorithms, like trees, BFS, DFS, etc.
+
+**gcutil**: Runtime utilities like hashing and debugging functions, but also dev utilities like file transformers and such
+
 ### TODO
 
 - go through all the TODOs. there are a lot!

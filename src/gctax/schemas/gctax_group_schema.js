@@ -1,4 +1,4 @@
-const gcgroup_schema = {
+const gctax_group_schema = {
     "id": "/gcgroup_schema",
     "type": "object",
     "properties": {
@@ -28,4 +28,4 @@ const gcgroup_schema = {
     "additionalProperties": false
 };
 
-module.exports = gcgroup_schema;
+module.exports = gctax_group_schema;

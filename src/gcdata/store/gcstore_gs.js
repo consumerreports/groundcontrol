@@ -2,6 +2,7 @@
 
 const fs = require("fs");
 const readline = require("readline");
+const Gclog = require("../../gclog/gclog.js");
 const Gcstore_base = require("./gcstore_base.js");
 const { google } = require("googleapis");
 
@@ -42,7 +43,7 @@ Gcstore_gs.prototype.init = function() {
                 scope: SCOPES,
             });
 
-            console.log("[GCDATA] Authorize Ground Control to use your Google Sheets account by visiting this URL:", authUrl);
+            Gclog.log("[GCDATA] Authorize Ground Control to use your Google Sheets account by visiting this URL:", authUrl);
             
             const rl = readline.createInterface({
                 input: process.stdin,
@@ -65,7 +66,7 @@ Gcstore_gs.prototype.init = function() {
                             reject(err);
                         }
                         
-                        console.log("[GCDATA] Token stored to", TOKEN_PATH);
+                        Gclog.log("[GCDATA] Token stored to", TOKEN_PATH);
                         resolve();
                     });
              
@@ -74,7 +75,7 @@ Gcstore_gs.prototype.init = function() {
             });
         }
 
-        console.log("[GCDATA] Using Google Sheets module");
+        Gclog.log("[GCDATA] Using Google Sheets module");
 
         fs.readFile(this.cred_path, (err, content) => {
             if (err) {
@@ -104,9 +105,9 @@ Gcstore_gs.prototype.put = async function(key, val) {
 
         return await this.sheets.spreadsheets.values.update(request).data;
     } catch(err) {
-        console.log(`[GCDATA] (${this.type}) No record found for sheet '${key}' -- creating new sheet...`);
+        Gclog.log(`[GCDATA] (${this.type}) No record found for sheet '${key}' -- creating new sheet...`);
         const res = await this._create(val); // TODO: are errors handled here? 
-        console.log(`[GCDATA] (${this.type}) Success! Created sheet ${res}`);
+        Gclog.log(`[GCDATA] (${this.type}) Success! Created sheet ${res}`);
     }
 }
 

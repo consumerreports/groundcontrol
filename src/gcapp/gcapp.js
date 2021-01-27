@@ -4,6 +4,7 @@ const yaml = require("js-yaml");
 const fs = require("fs");
 const p = require("path");
 const gc = require("./gcapp_config.js");
+const Gclog = require("../gclog/gclog.js");
 const Gcstd_eval = require("../gcstd/gcstd_eval.js");
 const gctax = require("../gctax/gctax.js");
 const gcstd = require("../gcstd/gcstd.js");
@@ -245,7 +246,7 @@ Gcapp.testplan_ext = function(subj_path, std_path, eval_path) {
 
 // Initialize an instance of a Gcapp object - a new Gcapp object isn't ready to use until this has been executed
 Gcapp.prototype.init = async function() {
-    console.log(`[GCAPP] Initializing Ground Control kernel ${this.id}...`);
+    Gclog.log(`[GCAPP] Initializing Ground Control kernel ${this.id}...`);
     await Promise.all(this.data_modules.map(module => module.init()));
 }
 

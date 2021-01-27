@@ -44,6 +44,8 @@ Ground Control can use the Google Sheets API to write and fetch data; this funct
 
 **gcenv**: Drop your client secrets/tokens/environment stuff here, this is where all modules should look for it
 
+**gclog**: Logging and messaging, with hooks to set your own functionality
+
 **gcsh**: Ground Control shell - a command line interface for GC
 
 **gcstd**: Standards module - data structures and functionality for defining and transforming standards, including standard evaluation sets

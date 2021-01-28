@@ -139,6 +139,43 @@ Gcapp.load_group_ext = function(path) {
     });
 }
 
+// Load a standard from an external YML file, optionally validate its schema
+// If the module at schema_path exports multiple schema objects, we consider the order of exports:
+// the 0th object is considered the parent schema, the following objects are registered as its children
+// Returns the deserialized standard as a Gcntree
+Gcapp.load_std_ext = async function(std_path, schema_path = null) {
+    // TODO: what happens if errors?
+    const doc = fs.readFileSync(std_path, {encoding: "utf8"});
+    const ymldoc = yaml.safeLoad(doc, "utf8");
+    
+    if (schema_path !== null) {
+         // ES2020 dynamic import, time to get weird!
+        const sch = await import(schema_path);
+        const sch_objs = Object.values(sch.default);
+    
+        const v = new Validator();
+    
+        if (sch_objs.length > 1) {
+            sch_objs.slice(1).forEach(obj => v.addSchema(obj, obj.id));
+        }
+    
+        const res = v.validate(ymldoc, sch_objs[0], {nestedErrors: true});
+    
+        if (res.errors.length > 0) {
+            throw new Error(`${std_path} is not a valid instance of standard ${schema_path}`);
+        }
+    }
+    
+    return Gcntree.from_json_doc(ymldoc, Gcntree.trans.to_obj);
+}
+
+// Load a standard schema as an external file
+// Returns a schema object
+Gcapp.load_schema_ext = async function(path) {
+    const sch = await import(path);
+    return sch.default;
+}
+
 // Generate a testplan from data provded as external YML files
 // Returns a Gcapp_tp_res object which wraps a Map where the keys are vector names and 
 // the values are arrays where each element is a part of a standard

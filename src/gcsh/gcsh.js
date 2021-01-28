@@ -1,18 +1,10 @@
 "use strict";
 
-// Gcapp.dhashgcsh should call high level API functions from Gcapp, which should call lower level
-// functions from gcstd and gctax... but since we're not implementing a data I/O layer for the prototype,
-// we're not really implementing any of the modules the way they're meant to be implemented. so all
-// the gcsh functions are just stubs that will need to be replaced...
-// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-// Put another way, this is just a demo for what gcsh could eventually become...
-
 const readline = require("readline");
 const util = require("util");
 const yaml = require("js-yaml");
 const fs = require("fs");
 const Validator = require("jsonschema").Validator;
-const ds_schema = require("../../temp/schemas/ds.js");
 
 const Gcapp = require("../gcapp/gcapp.js");
 const gcutil = require("../gcutil/gcutil.js");
@@ -22,13 +14,6 @@ const Gcstd_eval = require("../gcstd/gcstd_eval.js");
 const Gcstore_gs = require("../gcdata/store/gcstore_gs.js");
 
 const v = new Validator();
-
-// register all the split schemas with the validator
-v.addSchema(ds_schema.ds_label, "/ds_label");
-v.addSchema(ds_schema.ds_eval, "/ds_eval");
-v.addSchema(ds_schema.ds_crit, "/ds_crit");
-v.addSchema(ds_schema.ds_ind, "/ds_ind");
-v.addSchema(ds_schema.ds_proc, "/ds_proc");
 
 const PROMPT = "gcsh > ";
 
@@ -84,12 +69,6 @@ app.init().then(() => {
     rl.prompt();
 });
 
-// TODO: delete me
-// We need a reference to a Gcntree representation of a standard so we can create a gceval object for testing
-const doc = fs.readFileSync("../../temp/ds_103020.yml", {encoding: "utf8"});
-const ymldoc = yaml.safeLoad(doc, "utf8");
-const doc_tree = Gcntree.from_json_doc(ymldoc, Gcntree.trans.to_obj);
-
 async function _on_input(input) {
 	const tok = input.trim().split(" ");
 	const f = GRAMMAR.get(tok[0]);
@@ -108,18 +87,17 @@ async function _on_input(input) {
 
 // TODO: delete me!
 async function _debug(path) {
-    console.log(Gcapp.load_eval_set_ext(path)); 
+    const res = await Gcapp.load_std_ext("/home/noah/work/groundcontrol/temp/ds_103020.yml", "/home/noah/work/groundcontrol/temp/schemas/ds.js");
+
+    console.log(res);
 }
 
-function _esmake(std_path, ...nums) {
+async function _esmake(std_path, ...nums) {
     if (!std_path) {
         throw new Error("Missing path");
     }
-
-    const doc = fs.readFileSync(std_path, {encoding: "utf8"});
-    const ymldoc = yaml.safeLoad(doc, "utf8");
-    const doc_tree = Gcntree.from_json_doc(ymldoc, Gcntree.trans.to_obj);
-
+    
+    const doc_tree = await Gcapp.load_std_ext(std_path);
     const es = Gcapp.make_eval_set(doc_tree, nums.map(num => parseInt(num)), "Untitled Evaluation Set");
     console.log(`Success! Output: ${Gcapp.write_eval_set_ext(es, "Created by gcsh esmake")}`);
 }
@@ -148,31 +126,25 @@ function _parts(id) {
 
 // Display the enumerations for only part of an external standard file, where the part is defined using the method in
 // the 'parts' command
-function _fnum(path, sch_id, part_id) {
-    if (!path) {
+async function _fnum(path, sch_path, part_id) {
+    if (!path || !sch_path) {
         throw new Error("Missing path");
-    }
-    
-    // Lol... since we're faking this one standard schema (ID: 'ds'), every other schema ID is currently not found
-    if (sch_id !== "ds") {
-        throw new Error("Invalid schema ID");
     }
     
     try {
         // First get the prop name for the part code we're interested in
+        const ds_schema = await Gcapp.load_schema_ext(sch_path);
         const keys = Gcapp.get_nonscalar_keys(ds_schema);
         
         if (part_id < 0 || part_id > keys.length - 1) {
-            throw new Error(`Part ID out of range for standard schema ${sch_id}`);
+            throw new Error(`Part ID out of range for standard schema ${sch_path}`);
         }
 
         const prop = keys[part_id];
 
         // Now load the standard file and transform to a Gcntree
-        const doc = fs.readFileSync(path, {encoding: "utf8"});
-        const ymldoc = yaml.safeLoad(doc, "utf8");
-        const doc_tree = Gcntree.from_json_doc(ymldoc, Gcntree.trans.to_obj);
-        
+        const doc_tree = await Gcapp.load_std_ext(path);
+
         // TODO: we've decided that a standard's nodes are canonically enumerated using DFS preorder traversal
         // we should prob wrap this in an API layer function like Gcapp.enumerate_nodes()
         let tnodes = 0;
@@ -513,11 +485,11 @@ function _help() {
 
     console.log(`${C.BRIGHT}esmake [std path] [node1] [node2] [node3] ...\n${C.RESET}Create a new evaluation set and write it to disk in YAML format\n\n`);
     
-    console.log(`${C.BRIGHT}fnum [path] [schema ID] [part ID]\n${C.RESET}Show the enumerations for part of an external standard file (in YAML format)\n\n`);
+    console.log(`${C.BRIGHT}fnum [std path] [schema path] [part ID]\n${C.RESET}Show the enumerations for part of an external standard file (in YAML format)\n\n`);
     
-    console.log(`${C.BRIGHT}fcmp [path1] [path2] [schema ID]\n${C.RESET}Compare two external standard files (in YAML format) and display the diff if any\n\n`);
+    console.log(`${C.BRIGHT}fcmp [path1] [path2] [schema path]\n${C.RESET}Compare two external standard files (in YAML format) and display the diff if any\n\n`);
     
-    console.log(`${C.BRIGHT}fvalid [path] [schema ID]\n${C.RESET}Validate an external standard file (in YAML format) against a standard schema\n\n`); 
+    console.log(`${C.BRIGHT}fvalid [path] [schema path]\n${C.RESET}Validate an external standard file (in YAML format) against a standard schema\n\n`); 
     
     console.log(`${C.BRIGHT}grinfo [path]\n${C.RESET}Show info for an external group file (in YAML format)\n\n`);
     
@@ -587,41 +559,19 @@ function _tree_node_compare(a, b) {
     return bad_nodes;
 }
 
-function _fcmp(path1, path2, id) {
-    if (!path1 || !path2) {
+async function _fcmp(path1, path2, sch_path) {
+    if (!path1 || !path2 || !sch_path) {
         throw new Error("Missing path");
     }
     
-    // Lol... since we're faking this one standard schema (ID: 'ds'), every other schema ID is currently not found
-    if (id !== "ds") {
-        throw new Error("Invalid schema ID");
-    }
-
     try {
-        const doca = fs.readFileSync(path1, {encoding: "utf8"});
-        const docb = fs.readFileSync(path2, {encoding: "utf8"});
-        const ymldoca = yaml.safeLoad(doca, "utf8");
-        const ymldocb = yaml.safeLoad(docb, "utf8");
+        const doca_tree = await Gcapp.load_std_ext(path1, sch_path);
+        const docb_tree = await Gcapp.load_std_ext(path2, sch_path);
 
-        const resa = v.validate(ymldoca, ds_schema.ds, {nestedErrors: true});
-        
-        if (resa.errors.length !== 0) {
-            throw new Error(`file ${path1} is not a correct instance of standard schema ${id}. Run fvalid.`);
-        }
-
-        const resb = v.validate(ymldocb, ds_schema.ds, {nestedErrors: true});
-
-        if (resb.errors.length !== 0) {
-            throw new Error(`file ${path2} is not a correct instance of standard schema ${id}. Run fvalid.`);
-        }
-        
-        const doca_tree = Gcntree.from_json_doc(ymldoca, Gcntree.trans.to_obj);
-        const docb_tree = Gcntree.from_json_doc(ymldocb, Gcntree.trans.to_obj);
-            
         const hash1 = Gcapp.dhash(doca_tree);
         const hash2 = Gcapp.dhash(docb_tree);
 
-         if (hash1 === hash2) {
+        if (hash1 === hash2) {
             console.log(`Files are identical! SHA256: ${hash1}`);
             return;
         }
@@ -658,44 +608,29 @@ function _fcmp(path1, path2, id) {
     }
 }
 
-function _fvalid(path, id) {
-    if (!path) {
+// TODO: It'd be nice to emit the specific errors found in invalid standards, but we gotta refactor Gcapp.load_std_ext to return em
+async function _fvalid(path, sch_path) {
+    if (!path || !sch_path) {
         throw new Error("Missing path");
     }
     
-    // Lol... since we're faking this one standard schema (ID: 'ds'), every other schema ID is currently not found
-    if (id !== "ds") {
-        throw new Error("Invalid schema ID");
-    }
-
     try {
-        const doc = fs.readFileSync(path, {encoding: "utf8"});
-        const ymldoc = yaml.safeLoad(doc, "utf8");
-
-        // TODO: in "the future," we'd want a simple abstraction around jsonschema so we're not so tightly coupled to it
-        const res = v.validate(ymldoc, ds_schema.ds, {nestedErrors: true});    
-        
-        if (res.errors.length === 0) {
-            console.log(`VALID: ${path} is a correct instance of standard schema ${id}!`);
-        } else {
-            console.log(`INVALID: ${path} has errors:\n\n${res.errors}`);
-        }
+        await Gcapp.load_std_ext(path, sch_path);
+        console.log(`VALID: ${path} is a correct instance of standard ${sch_path}`);
     } catch(err) {
-        throw new Error(err.message);
+        console.log(`INVALID: ${err.message}`);
     }
 }
 
-function _checkset(eval_path, std_path) {
+async function _checkset(eval_path, std_path) {
     if (!eval_path || !std_path) {
         throw new Error("Missing path");
     }
 
     try {
         const ev = Gcapp.load_eval_set_ext(eval_path);
-    
-        const doc = fs.readFileSync(std_path, {encoding: "utf8"});
-        const doctree = Gcntree.from_json_doc(yaml.safeLoad(doc, "utf8"), Gcntree.trans.to_obj);
-        
+        const doctree = await Gcapp.load_std_ext(std_path);
+
         const parts = new Map();
         let n = 0;
 

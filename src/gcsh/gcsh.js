@@ -104,15 +104,16 @@ async function _esmake(std_path, ...nums) {
 
 // Display the meaningful parts of a given standard schema. These are the parts you reference for fnum, and eventually
 // when creating a Gcstd_eval object...
-function _parts(id) {
-    // Lol... since we're faking this one standard schema (ID: 'ds'), every other schema ID is currently not found
-    if (id !== "ds") {
-        throw new Error("Invalid schema ID");
+async function _parts(path) {
+    if (!path) {
+        throw new Error("Missing path");
     }
     
+    const schema = await Gcapp.load_schema_ext(path);
+
     // TODO: to avoid presenting the user with every single part of a standard schema, we hypothesize that the 
     // "meaningful" parts of a standard schema are its nonscalar values, see get_nonscalar_keys for a deeper discussion
-    const keys = Gcapp.get_nonscalar_keys(ds_schema);
+    const keys = Gcapp.get_nonscalar_keys(schema);
     
     if (keys.length === 0) {
         console.log("No meaningful parts found!");
@@ -503,7 +504,7 @@ function _help() {
     
     console.log(`${C.BRIGHT}lstd\n${C.RESET}List all available standards\n\n`);
     
-    console.log(`${C.BRIGHT}parts [schema ID]\n${C.RESET}Display the meaningful parts of a given standard schema\n\n`);
+    console.log(`${C.BRIGHT}parts [schema path]\n${C.RESET}Display the meaningful parts of an external standard schema\n\n`);
     
     console.log(`${C.BRIGHT}quit\n${C.RESET}Exit\n\n`);
     
@@ -525,8 +526,7 @@ function _lent() {
 // TODO: in "the future," lsch would query some method at the data I/O layer to retrieve all the standard schemas in the currently
 // defined data store... for this demo, we're faking a world where there's one standard schema in the data store and its ID is 'ds'
 function _lsch() {
-    console.log("ID\t\t\t\t\t\t\tNAME");
-    console.log("ds\t\t\t\t\t\t\tCR Digital Standard Schema");
+    console.log("Ooops! I don't do anything yet. Email noah.levenson@consumer.org about this!");
 }
 
 function _lstd() {

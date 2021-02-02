@@ -281,6 +281,60 @@ Gcapp.testplan_ext = function(subj_path, std_path, eval_path) {
     });
 }
 
+// Compute the absolute node numbers for one "part" of an external standard file as defined using the "parts" command
+// Returns an object with some metadata which wraps an array of [node_num, node_data, path_to_node] arrays
+Gcapp.fnum_ext = async function(std_path, sch_path, part_id) {
+    // Get the property name for the part code we're interested in
+    const schema = await Gcapp.load_schema_ext(sch_path);
+    const keys = Gcapp.get_nonscalar_keys(schema);
+
+    if (part_id < 0 || part_id > keys.length - 1) {
+        throw new Error(`Part ID out of range for standard schema ${sch_path}`);
+    }
+
+    const prop = keys[part_id];
+
+    // Load the standard
+    const doc_tree = await Gcapp.load_std_ext(std_path);
+    let total_nodes = 0;
+
+    const res = doc_tree.dfs((node, data) => {
+        // TODO: this is a brittle and bad way to discern between diff kinds of nodes
+        // we prob need a wrapper class for tree nodes which lets them reflect their type
+        // and the set of node types for a given standard is specified by the standard schema
+        if (node.parent && node.parent.data === prop && typeof node.data !== "string") {
+            const path = [];
+            let pnode = node.parent;
+
+            while (pnode !== null) {
+                if (pnode.parent && keys.includes(pnode.parent.data)) {
+                    path.push(pnode.data);
+                }
+
+                pnode = pnode.parent;
+            }
+            
+            // TODO: this grossly assumes that the standard was transformed to a Gcntree using the 
+            // to_obj transformer... that's gonna break real quick
+            const pathstr = path.reverse().map((hop) => {
+                return `${Object.values(hop)[0]} /`;
+            }).join(" ");
+            
+            data.push([total_nodes, node.data, pathstr.substr(0, pathstr.length - 2)]);
+        }
+
+        total_nodes += 1;
+    });
+
+    return {
+        prop: prop,
+        part_id: part_id,
+        total_nodes: total_nodes,
+        nodes: res
+    };
+}
+
+
 // Initialize an instance of a Gcapp object - a new Gcapp object isn't ready to use until this has been executed
 Gcapp.prototype.init = async function() {
     Gclog.log(`[GCAPP] Initializing Ground Control kernel ${this.id}...`);

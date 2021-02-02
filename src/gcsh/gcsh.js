@@ -125,71 +125,25 @@ async function _parts(path) {
     });
 }
 
-// Display the enumerations for only part of an external standard file, where the part is defined using the method in
-// the 'parts' command
-async function _fnum(path, sch_path, part_id) {
-    if (!path || !sch_path) {
+// Display the enumerations for one "part" of an external standard file
+async function _fnum(std_path, sch_path, part_id) {
+    if (!std_path || !sch_path) {
         throw new Error("Missing path");
     }
     
-    try {
-        // First get the prop name for the part code we're interested in
-        const ds_schema = await Gcapp.load_schema_ext(sch_path);
-        const keys = Gcapp.get_nonscalar_keys(ds_schema);
-        
-        if (part_id < 0 || part_id > keys.length - 1) {
-            throw new Error(`Part ID out of range for standard schema ${sch_path}`);
-        }
-
-        const prop = keys[part_id];
-
-        // Now load the standard file and transform to a Gcntree
-        const doc_tree = await Gcapp.load_std_ext(path);
-
-        // TODO: we've decided that a standard's nodes are canonically enumerated using DFS preorder traversal
-        // we should prob wrap this in an API layer function like Gcapp.enumerate_nodes()
-        let tnodes = 0;
-        let snodes = 0;
-        
-        doc_tree.dfs((node, data) => {
-            // TODO: this is a brittle and bad way to discern between different kinds of nodes
-            // We really need a wrapper class for nodes which lets them reflect their type,
-            // and the set of node types is determined by the standard schema (that means that
-            // we need a higher order function for constructing a Gcntree from a ymldoc AND a standard schema)
-            if (node.parent && node.parent.data === prop && typeof node.data !== "string") {
-                const path = [];
-                let pnode = node.parent;
-
-                while (pnode !== null) {
-                    if (pnode.parent && keys.includes(pnode.parent.data)) {
-                        path.push(pnode.data);
-                    }
-
-                    pnode = pnode.parent;
-                }
-                
-                // TODO: we make a gross assumption that all the node.data we've collected will be formatted
-                // as an object as specified by Gcntree.trans.to_obj -- this is brittle and bad. This can be
-                // eliminated if we implement a wrapper class for Gcntree node data...
-                let pathstr = "VIA: ";
-
-                path.reverse().forEach((hop) => {
-                    pathstr += `${Object.values(hop)[0]} / `;
-                });
-                
-                console.log(tnodes);
-                console.log(node.data);
-                console.log(`${pathstr.substr(0, pathstr.length - 2)}\n\n`);
-                snodes += 1;
-            }
-
-            tnodes += 1;
-        });
-
-        console.log(`Done! ${path} has ${snodes} '${prop}' (part ID ${part_id}) out of ${tnodes} total nodes.`);
-    } catch (err) {
-        throw new Error(err.message);
+    if (!part_id) {
+        throw new Error("You must specify a part ID");
     }
+
+    const res = await Gcapp.fnum_ext(std_path, sch_path, part_id);
+
+    res.nodes.forEach((node) => {
+        console.log(node[0]);
+        console.log(node[1]);
+        console.log(`VIA: ${node[2]}\n`)
+    });
+
+    console.log(`Done! ${std_path} has ${res.nodes.length} '${res.prop}' (part ID ${res.part_id}) out of ${res.total_nodes} total nodes.`);
 }
 
 function _io() {

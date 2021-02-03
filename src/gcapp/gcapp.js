@@ -57,6 +57,29 @@ Gcapp.get_node_hash = function(std, n) {
     })[0];
 }
 
+// Compare 2 Gcntrees and return an array representing the asymmetric difference between tree a and tree b
+// TODO: this is O(a * b), right? and it's always worst case bc we don't have a mechanism to terminate DFS early
+// here's a way we could beat that: create a binary search tree of the hashes of each of the nodes in tree b, then
+// you can check for the intersection of nodes in O(h) -- maybe setup costs ain't worth it tho...
+Gcapp.asymdif = function(a, b) {
+    return a.dfs((node, bad_nodes) => {
+        const hash_a = Gcapp.dhash(node.data);
+        let found = false;
+
+        b.dfs((node, data) => {
+            const hash_b = Gcapp.dhash(node.data);
+
+            if (hash_a === hash_b) {
+                found = true;
+            }
+        });
+
+        if (!found) {
+            bad_nodes.push(node.data);
+        }
+    });
+}
+
 // Convenience function to create an evaluation set from a standard (as a Gcntree) and a list of node numbers
 // Returns a Gcstd_eval object
 Gcapp.make_eval_set = function(std, nums = [], name = "") {
@@ -283,7 +306,7 @@ Gcapp.testplan_ext = function(subj_path, std_path, eval_path) {
 
 // Compute the absolute node numbers for one "part" of an external standard file as defined using the "parts" command
 // Returns an object with some metadata which wraps an array of [node_num, node_data, path_to_node] arrays
-Gcapp.fnum_ext = async function(std_path, sch_path, part_id) {
+Gcapp.num_ext = async function(std_path, sch_path, part_id) {
     // Get the property name for the part code we're interested in
     const schema = await Gcapp.load_schema_ext(sch_path);
     const keys = Gcapp.get_nonscalar_keys(schema);
@@ -334,6 +357,35 @@ Gcapp.fnum_ext = async function(std_path, sch_path, part_id) {
     };
 }
 
+// Compare two external standard files and find the symmetric difference expressed as reciprocal asymmetric differences
+// Returns an object wrapping two arrays: the asymmetric difference of path1 wrt path2, and the asymmetric 
+// difference of path2 wrt path1 -- note that identical standards and permuted standards will return the same result
+Gcapp.cmp_ext = async function(path1, path2, sch_path) {
+    const doca_tree = await Gcapp.load_std_ext(path1, sch_path);
+    const docb_tree = await Gcapp.load_std_ext(path2, sch_path);
+
+    // TODO: This is asymptotically stupid, we should write a function to compare both trees simultaneously
+    const bada = Gcapp.asymdif(doca_tree, docb_tree);
+    const badb = Gcapp.asymdif(docb_tree, doca_tree);
+
+    return {
+        a: bada,
+        b: badb
+    };
+}
+
+// Check if an external standard file is a valid instance of a given schema
+// Returns a bool
+// TODO: it'd be nice to emit the errors found in invalid standards, but we gotta refactor load_std_ext to return em
+// TODO: this doesn't discern between an invalid path and an invalid schema
+Gcapp.valid_ext = async function(path, sch_path) {
+    try {
+        await Gcapp.load_std_ext(path, sch_path);
+        return true;
+    } catch(err) {
+        return false;
+    }
+}
 
 // Initialize an instance of a Gcapp object - a new Gcapp object isn't ready to use until this has been executed
 Gcapp.prototype.init = async function() {

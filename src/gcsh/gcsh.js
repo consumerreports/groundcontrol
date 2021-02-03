@@ -135,7 +135,7 @@ async function _fnum(std_path, sch_path, part_id) {
         throw new Error("You must specify a part ID");
     }
 
-    const res = await Gcapp.fnum_ext(std_path, sch_path, part_id);
+    const res = await Gcapp.num_ext(std_path, sch_path, part_id);
 
     res.nodes.forEach((node) => {
         console.log(node[0]);
@@ -486,32 +486,6 @@ function _lsch() {
 function _lstd() {
     console.log("Oops! I don't do anything yet. Email noah.levenson@consumer.org about this!");
 }
-// Compare two Gcntrees and return an array of the nodes found in tree a that were not found in tree b (node order is irrelevant)
-// TODO: this is O(a * b), right? and it's always worst case because we don't have a mechanism to terminate DFS early
-// here's a way we could beat that:  create a binary search tree of the hashes of each of the nodes in tree b -- now by hashing 
-// each node in tree a, you can check if that node is in tree b in O(h) -- maybe setup costs ain't worth it tho...
-function _tree_node_compare(a, b) {
-    const bad_nodes = [];
-
-    a.dfs((node, data) => {
-        const hasha = Gcapp.dhash(node.data);
-        let found = false;
-        
-        b.dfs((node, data) => {
-            const hashb = Gcapp.dhash(node.data);
-            
-            if (hasha === hashb) {
-                found = true;
-            }
-        });
-        
-        if (!found) {
-            bad_nodes.push(node.data);
-        }
-    });
-
-    return bad_nodes;
-}
 
 async function _fcmp(path1, path2, sch_path) {
     if (!path1 || !path2 || !sch_path) {
@@ -519,41 +493,30 @@ async function _fcmp(path1, path2, sch_path) {
     }
     
     try {
+        // TODO: We deserialize and transform the standards unnecessarily here
+        // just to check the case where they're identical... but maybe we can refactor
+        // Gcapp.cmp_ext to flag the difference between identical and permuted instead...
         const doca_tree = await Gcapp.load_std_ext(path1, sch_path);
         const docb_tree = await Gcapp.load_std_ext(path2, sch_path);
 
-        const hash1 = Gcapp.dhash(doca_tree);
-        const hash2 = Gcapp.dhash(docb_tree);
-
-        if (hash1 === hash2) {
-            console.log(`Files are identical! SHA256: ${hash1}`);
+        if (Gcapp.dhash(doca_tree) === Gcapp.dhash(docb_tree)) {
+            console.log(`Files are identical! SHA256: ${Gcapp.dhash(doca_tree)}`);
             return;
         }
-       
-        // This is asymptotically stupid -- we can write a much more optimal algorithm that compares both trees simultaneously
-        const bada = _tree_node_compare(doca_tree, docb_tree);
-        const badb = _tree_node_compare(docb_tree, doca_tree);
         
-        // It's currently assumed that the order of procedures is irrelevant -- that is, every test is a discrete
-        // action that can be performed before or after any other test. Accordingly, the sequence of tests belonging
-        // to a standard can be permuted without having any effect on their results -- so even in the rare case that
-        // a procedure is reassigned under a different indicator, it shouldn't be considered a "change" in the test suite.
-        // This assumption informs the design of fcmp: to minimize noise, we only tell the user which nodes are disjoint.
-        // If two trees are sequential permutations of an identical set of nodes, we alert the user but show no diff.
-        // TODO: We may discover through use that this is not desirable; users may more often want to see when and how parts of
-        // a standard have been rearranged, if not actually edited for content.
+        const res = await Gcapp.cmp_ext(path1, path2, sch_path);
         
-        if (bada.length === 0 && badb.length === 0) {
+        if (res.a.length === 0 && res.b.length === 0) {
             console.log(`Permutation: file ${path1} has the same nodes as file ${path2}, but in a different order.`);
             return;
         }
 
-        bada.forEach((node) => {
+        res.a.forEach((node) => {
             console.log(`File ${path2} did not have this node:`);
             console.log(node);
         });
 
-        badb.forEach((node) => {
+        res.b.forEach((node) => {
             console.log(`\nFile ${path1} did not have this node:`);
             console.log(node);
         });
@@ -562,18 +525,27 @@ async function _fcmp(path1, path2, sch_path) {
     }
 }
 
-// TODO: It'd be nice to emit the specific errors found in invalid standards, but we gotta refactor Gcapp.load_std_ext to return em
 async function _fvalid(path, sch_path) {
     if (!path || !sch_path) {
         throw new Error("Missing path");
     }
     
-    try {
-        await Gcapp.load_std_ext(path, sch_path);
-        console.log(`VALID: ${path} is a correct instance of standard ${sch_path}`);
-    } catch(err) {
-        console.log(`INVALID: ${err.message}`);
+    if (!fs.existsSync(path) ) {
+        throw new Error(`${path} does not exist`);
     }
+
+    if (!fs.existsSync(sch_path)) {
+        throw new Error(`${sch_path} does not exist`);
+    }
+
+    const res = await Gcapp.valid_ext(path, sch_path);
+
+    if (!res) {
+        console.log(`INVALID: ${path} is not a correct instance of standard ${sch_path}`);
+        return;
+    }
+
+    console.log(`VALID: ${path} is a correct instance of standard ${sch_path}`);
 }
 
 async function _checkset(eval_path, std_path) {

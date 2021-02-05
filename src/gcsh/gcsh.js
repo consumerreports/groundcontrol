@@ -1,19 +1,9 @@
 "use strict";
 
 const readline = require("readline");
-const util = require("util");
-const yaml = require("js-yaml");
 const fs = require("fs");
-const Validator = require("jsonschema").Validator;
-
 const Gcapp = require("../gcapp/gcapp.js");
-const gcutil = require("../gcutil/gcutil.js");
-const Gcntree = require("../gctypes/gcntree/gcntree.js");
-const Gcstd_eval = require("../gcstd/gcstd_eval.js");
-
 const Gcstore_gs = require("../gcdata/store/gcstore_gs.js");
-
-const v = new Validator();
 
 const PROMPT = "gcsh > ";
 
@@ -173,7 +163,7 @@ app.init().then(() => {
 
 async function _on_input(input) {
 	const tok = input.trim().split(" ");
-	const f = GRAMMAR.get(tok[0])[0];
+	const f = GRAMMAR.get(tok[0]);
 
 	if (!f) {
 		console.log(`Bad command ${tok[0]}`);
@@ -181,7 +171,7 @@ async function _on_input(input) {
 	}
 
 	try {
-		await f(...tok.slice(1));
+		await f[0](...tok.slice(1));
 	} catch (err) {
 		console.log(`Error: ${err.message}`);
 	}
@@ -305,7 +295,7 @@ async function _testplan(subj_path, std_path, eval_path) {
         const input = await press_any_key();
         
         if (input.toUpperCase() === "Y") {
-            await app.data_modules[0].put("NEW", _testplan_to_gs_workbook(res, std_path));
+            await app.data_modules[0].put("NEW", await _testplan_to_gs_workbook(res, std_path));
         }
         
         // TODO: We treat any non-"Y" answer as an "N" -- do we care?
@@ -321,15 +311,11 @@ async function _testplan(subj_path, std_path, eval_path) {
 // Reports, and aren't designed to generalize to other standards. Having said all this, we're regarding workbooks 
 // a prototype-era escape hatch provided by gcsh while we figure out the right way for Ground Control to structure
 // and store test results.
-function _testplan_to_gs_workbook(tp, std_path) {
+async function _testplan_to_gs_workbook(tp, std_path) {
     // Collect all the node numbers in the testplan hashmap into a set
     const node_nums = new Set(Array.from(tp.map.values()).flat().map(obj => obj.node_num));
     
-    // Load the standard and transform to a Gcntree 
-    const doc = fs.readFileSync(std_path, {encoding: "utf8"});
-    const ymldoc = yaml.safeLoad(doc, "utf8");
-    const doc_tree = Gcntree.from_json_doc(ymldoc, Gcntree.trans.to_obj);
-    
+    const doc_tree = await Gcapp.load_std_ext(std_path);
     // Now just DFS inorder traversal through the standard and walk up as necessary to collect our columns
     // Abandon all hope of generality here, we're coupled as tightly as possible to the DS
     let n = 0;
@@ -619,49 +605,15 @@ async function _checkset(eval_path, std_path) {
     if (!eval_path || !std_path) {
         throw new Error("Missing path");
     }
+    
+    const res = await Gcapp.checkset_ext(eval_path, std_path);
+    res.resolved.forEach(part => console.log(part));
+    console.log(`${eval_path} selects ${res.resolved.length} of ${res.total_nodes} total nodes in ${std_path}`);
 
-    try {
-        const ev = Gcapp.load_eval_set_ext(eval_path);
-        const doctree = await Gcapp.load_std_ext(std_path);
-
-        const parts = new Map();
-        let n = 0;
-
-        doctree.dfs((node, data) => {
-            const node_hash = Gcapp.dhash(node.data);
-
-            if (ev.set.has(node_hash)) {
-                parts.set(node_hash, node.data);
-            }
-
-            n += 1
-        });
-        
-        const homogeneous = Array.from(parts.values()).every((obj, i, arr) => {
-            return Object.keys(obj)[0] === Object.keys(arr[0])[0]
-        });
-        
-        if (!homogeneous) {
-            throw new Error(`Illegal evaluation set -- ${eval_path} is non-homogeneous`);
-        }
-
-        Array.from(parts.values()).forEach((part) => {
-            console.log(part);
-        });
-        
-        console.log(`${eval_path} selects ${parts.size} of ${n} total nodes in ${std_path}`);
-        
-        // unresolved holds any node hashes specified by the evaluation set that we didn't find in the standard
-        const found_hashes = Array.from(parts.keys());
-        const unresolved = Array.from(ev.set.values()).filter(node_hash => !found_hashes.includes(node_hash));
-
-        if (unresolved.length === 0) {
-            console.log(`SUCCESS: All ${ev.set.size} links were resolved in ${std_path}!`);
-        } else {
-            console.log(`WARNING: ${unresolved} links could not be resolved in ${std_path}!`);
-        }
-    } catch(err) {
-        throw new Error(err.message);
+    if (res.unresolved.length === 0) {
+        console.log(`SUCCESS: All ${res.total_evals} links were resolved in ${std_path}!`);
+    } else {
+        console.log(`WARNING: ${res.unresolved.length} links could not be resolved in ${std_path}`);
     }
 }
 

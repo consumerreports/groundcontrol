@@ -387,6 +387,46 @@ Gcapp.valid_ext = async function(path, sch_path) {
     }
 }
 
+// Apply an external evaluation set against an external standard and find both resolved and unresolved links 
+// Will throw an error if the specified evaluation set is non-homogeneous
+// Returns an object wrapping two arrays: parts from the standard representing resolved links, and hashes representing any 
+// unresolved links
+Gcapp.checkset_ext = async function(eval_path, std_path) {
+    const ev = Gcapp.load_eval_set_ext(eval_path);
+    const doctree = await Gcapp.load_std_ext(std_path);
+
+    const parts = new Map();
+    let n = 0;
+
+    doctree.dfs((node, data) => {
+        const node_hash = Gcapp.dhash(node.data);
+
+        if (ev.set.has(node_hash)) {
+            parts.set(node_hash, node.data);
+        }
+
+        n += 1;
+    });
+
+    const h = Array.from(parts.values()).every((obj, i, arr) => {
+        return Object.keys(obj)[0] === Object.keys(arr[0])[0];
+    });
+
+    if (!h) {
+        throw new Error(`Illegal evaluation set - ${eval_path} is non-homogeneous`);
+    }
+
+    const found_hashes = Array.from(parts.keys());
+    const unresolved = Array.from(ev.set.values()).filter(node_hash => !found_hashes.includes(node_hash));
+    
+    return {
+        resolved: Array.from(parts.values()),
+        unresolved: unresolved,
+        total_evals: ev.set.size,
+        total_nodes: n
+    };
+}
+
 // Initialize an instance of a Gcapp object - a new Gcapp object isn't ready to use until this has been executed
 Gcapp.prototype.init = async function() {
     Gclog.log(`[GCAPP] Initializing Ground Control kernel ${this.id}...`);

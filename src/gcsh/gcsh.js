@@ -17,25 +17,127 @@ const v = new Validator();
 
 const PROMPT = "gcsh > ";
 
+// {key: command, val: [function, help parameter list, help copy]]}
 const GRAMMAR = new Map([
-    ["quit", _quit],
-    ["checkset", _checkset],
-    ["clear", _clear],
-    ["esmake", _esmake],
-    ["fnum", _fnum],
-    ["grinfo", _grinfo],
-    ["help", _help],
-    ["io", _io],
-    ["leval", _leval],
-    ["lent", _lent],
-    ["lsch", _lsch],
-    ["lstd", _lstd],
-    ["fvalid", _fvalid],
-    ["fcmp", _fcmp],
-    ["parts", _parts],
-    ["testplan", _testplan],
-    ["vecs", _vecs],
-    ["debug", _debug] // TODO: Delete me!
+    ["quit", 
+        [
+            _quit,
+            "",
+            "Exit"
+        ]
+    ],
+    ["checkset",
+        [
+            _checkset,
+            "[eval set path] [std path]",
+            "Apply an evaluation set against an external standard file (in YAML format) and show resolved links"
+        ]
+    ],
+    ["clear",
+        [
+            _clear,
+            "",
+            "Clear screen"
+        ]
+    ],
+    ["esmake",
+        [
+            _esmake,
+            "[std path] [node1] [node2] [node3] ...",
+            "Create a new evaluation set and write it to disk in YAML format"
+        ]
+    ],
+    ["fnum",
+        [
+            _fnum,
+            "[std path] [schema path] [part ID]",
+            "Show the enumerations for part of an external standard file (in YAML format)"
+        ]
+    ],
+    ["grinfo",
+        [
+            _grinfo,
+            "[path]",
+            "Show info for an external group file (in YAML format)"
+        ]
+    ],
+    ["help",
+        [
+            _help,
+            "",
+            "Display this help info"
+        ]
+    ],
+    ["io",
+        [
+            _io,
+            "",
+            "Display the data I/O modules associated with the running instance of Ground Control"
+        ]
+    ],
+    ["leval",
+        [
+            _leval,
+            "",
+            "List all available evaluation sets"
+        ]
+    ],
+    ["lent",
+        [
+            _lent,
+            "",
+            "List all available testable entities"
+        ]
+    ],
+    ["lsch",
+        [
+            _lsch,
+            "",
+            "List all available standard schemas"
+        ]
+    ],
+    ["lstd",
+        [
+            _lstd,
+            "",
+            "List all available standards"
+        ]
+    ],
+    ["fvalid",
+        [
+            _fvalid,
+            "[path] [schema path]",
+            "Validate an external standard file (in YAML format) against a standard schema"
+        ]
+    ],
+    ["fcmp",
+        [
+            _fcmp,
+            "[path1] [path2] [schema path]",
+            "Compare two external standard files (in YAML format) and display the diff if any"
+        ]
+    ],
+    ["parts",
+        [
+            _parts,
+            "[schema path]",
+            "Display the meaningful parts of an external standard schema"
+        ]
+    ],
+    ["testplan",
+        [
+            _testplan,
+            "[subject path] [std path] [eval path]",
+            "Generate the evaluation suite for a single testable entity or group, standard, and evaluation set (using the default vector mapping); specifying no evaluation set will apply the entire standard"
+        ]
+    ],
+    ["vecs",
+        [
+            _vecs,
+            "",
+            "Display the vector names known to this version of Ground Control"
+        ]
+    ]
 ]);
 
 // Terminal colors
@@ -71,7 +173,7 @@ app.init().then(() => {
 
 async function _on_input(input) {
 	const tok = input.trim().split(" ");
-	const f = GRAMMAR.get(tok[0]);
+	const f = GRAMMAR.get(tok[0])[0];
 
 	if (!f) {
 		console.log(`Bad command ${tok[0]}`);
@@ -83,13 +185,6 @@ async function _on_input(input) {
 	} catch (err) {
 		console.log(`Error: ${err.message}`);
 	}
-}
-
-// TODO: delete me!
-async function _debug(path) {
-    const res = await Gcapp.load_std_ext("/home/noah/work/groundcontrol/temp/ds_103020.yml", "/home/noah/work/groundcontrol/temp/schemas/ds.js");
-
-    console.log(res);
 }
 
 async function _esmake(std_path, ...nums) {
@@ -429,42 +524,14 @@ function _grinfo(path) {
     common.forEach(str => console.log(str));
 }
 
-// TODO: it'd be cool if the GRAMMAR hashmap kept a lil help string for each token, and so we could automatically build the help menu by
-// iterating through the map instead of hardcoding it here
 function _help() {
     console.log("+-----------+");
     console.log("| gsch help |");
     console.log("+-----------+\n");
-    console.log(`${C.BRIGHT}checkset [eval set path] [std path]\n${C.RESET}Apply an evaluation set against an external standard file (in YAML format) and show resolved links\n\n`);
-    console.log(`${C.BRIGHT}clear\n${C.RESET}Clear screen\n\n`);  
 
-    console.log(`${C.BRIGHT}esmake [std path] [node1] [node2] [node3] ...\n${C.RESET}Create a new evaluation set and write it to disk in YAML format\n\n`);
-    
-    console.log(`${C.BRIGHT}fnum [std path] [schema path] [part ID]\n${C.RESET}Show the enumerations for part of an external standard file (in YAML format)\n\n`);
-    
-    console.log(`${C.BRIGHT}fcmp [path1] [path2] [schema path]\n${C.RESET}Compare two external standard files (in YAML format) and display the diff if any\n\n`);
-    
-    console.log(`${C.BRIGHT}fvalid [path] [schema path]\n${C.RESET}Validate an external standard file (in YAML format) against a standard schema\n\n`); 
-    
-    console.log(`${C.BRIGHT}grinfo [path]\n${C.RESET}Show info for an external group file (in YAML format)\n\n`);
-    
-    console.log(`${C.BRIGHT}io\n${C.RESET}Display the data I/O modules associated with the running instance of Ground Control\n\n`);
-    
-    console.log(`${C.BRIGHT}leval\n${C.RESET}List all available evaluation sets\n\n`);
-    
-    console.log(`${C.BRIGHT}lent\n${C.RESET}List all available testable entities\n\n`);
-    
-    console.log(`${C.BRIGHT}lsch\n${C.RESET}List all available standard schemas\n\n`);
-    
-    console.log(`${C.BRIGHT}lstd\n${C.RESET}List all available standards\n\n`);
-    
-    console.log(`${C.BRIGHT}parts [schema path]\n${C.RESET}Display the meaningful parts of an external standard schema\n\n`);
-    
-    console.log(`${C.BRIGHT}quit\n${C.RESET}Exit\n\n`);
-    
-    console.log(`${C.BRIGHT}testplan [subject path] [std path] [eval path]\n${C.RESET}Generate the suite of evaluations that must be performed for a given testable entity or group of testable entities, standard, and evaluation set (using the default vector mapping); specifying no evaluation set will apply the entire standard\n\n`);
-    
-    console.log(`${C.BRIGHT}vecs\n${C.RESET}Display the vector names known to this version of Ground Control\n\n`);
+    Array.from(GRAMMAR.entries()).forEach((command) => {
+        console.log(`${C.BRIGHT}${command[0]} ${command[1][1]}\n${C.RESET}${command[1][2]}\n\n`);
+    });
 }
 
 // TODO: in "the future," leval would grab all the evaluation sets in the currently defined data store... for now, we're just

@@ -136,6 +136,42 @@ const C = {
     RESET: "\x1b[0m"
 };
 
+// REPL stuff
+async function _on_input(input) {
+    const tok = input.trim().split(" ");
+    const f = GRAMMAR.get(tok[0]);
+
+    if (!f) {
+        console.log(`Bad command ${tok[0]}`);
+        return;
+    }
+
+    try {
+        await f[0](...tok.slice(1));
+    } catch (err) {
+        console.log(`Error: ${err.message}`);
+    }
+}
+
+async function input_handler(input) {
+    if (input.length > 0) {
+        await _on_input(input);  
+    }
+
+    rl.prompt();
+}
+
+function press_any_key() {
+    return new Promise((resolve, reject) => {
+        rl.removeListener("line", input_handler);
+        
+        rl.once("line", (input) => {
+            rl.on("line", input_handler);
+            resolve(input);
+        });
+    });
+}
+
 // Construct + init a new instance of the API, make it use the google sheets I/O module
 const app = new Gcapp({data_modules: [new Gcstore_gs()]});
 let rl = null;
@@ -161,20 +197,31 @@ app.init().then(() => {
     rl.prompt();
 });
 
-async function _on_input(input) {
-	const tok = input.trim().split(" ");
-	const f = GRAMMAR.get(tok[0]);
+// *** Command handlers, in order of appearance in the grammar ***
 
-	if (!f) {
-		console.log(`Bad command ${tok[0]}`);
-		return;
-	}
+function _quit() {
+    console.log("Bye!");
+    process.exit();
+}
 
-	try {
-		await f[0](...tok.slice(1));
-	} catch (err) {
-		console.log(`Error: ${err.message}`);
-	}
+async function _checkset(eval_path, std_path) {
+    if (!eval_path || !std_path) {
+        throw new Error("Missing path");
+    }
+    
+    const res = await Gcapp.checkset_ext(eval_path, std_path);
+    res.resolved.forEach(part => console.log(part));
+    console.log(`${eval_path} selects ${res.resolved.length} of ${res.total_nodes} total nodes in ${std_path}`);
+
+    if (res.unresolved.length === 0) {
+        console.log(`SUCCESS: All ${res.total_evals} links were resolved in ${std_path}!`);
+    } else {
+        console.log(`WARNING: ${res.unresolved.length} links could not be resolved in ${std_path}`);
+    }
+}
+
+function _clear() {
+    console.clear();
 }
 
 async function _esmake(std_path, ...nums) {
@@ -187,30 +234,6 @@ async function _esmake(std_path, ...nums) {
     console.log(`Success! Output: ${Gcapp.write_eval_set_ext(es, "Created by gcsh esmake")}`);
 }
 
-// Display the meaningful parts of a given standard schema. These are the parts you reference for fnum, and eventually
-// when creating a Gcstd_eval object...
-async function _parts(path) {
-    if (!path) {
-        throw new Error("Missing path");
-    }
-    
-    const schema = await Gcapp.load_schema_ext(path);
-
-    // TODO: to avoid presenting the user with every single part of a standard schema, we hypothesize that the 
-    // "meaningful" parts of a standard schema are its nonscalar values, see get_nonscalar_keys for a deeper discussion
-    const keys = Gcapp.get_nonscalar_keys(schema);
-    
-    if (keys.length === 0) {
-        console.log("No meaningful parts found!");
-        return;
-    }
-    
-    keys.forEach((key, i) => {
-        console.log(`${i}: ${key}`);
-    });
-}
-
-// Display the enumerations for one "part" of an external standard file
 async function _fnum(std_path, sch_path, part_id) {
     if (!std_path || !sch_path) {
         throw new Error("Missing path");
@@ -231,10 +254,138 @@ async function _fnum(std_path, sch_path, part_id) {
     console.log(`Done! ${std_path} has ${res.nodes.length} '${res.prop}' (part ID ${res.part_id}) out of ${res.total_nodes} total nodes.`);
 }
 
+function _grinfo(path) {
+    if (!path) {
+        throw new Error("Missing path");
+    }
+
+    const group = Gcapp.load_group_ext(path);
+
+    console.log(`${group.name}`);
+    console.log(`(${group.notes})\n`);
+    
+    group.tents.forEach((tent, i) => {
+        console.log(`${i}: ${tent.name}`);
+        console.log(`(${tent.vecs.length} vectors)\n`);
+    });
+    
+    const common = Gcapp.get_common_vecs(group.tents);
+    console.log(`This group contains ${group.tents.length} testable entities which share ${common.length} common vectors:\n`);
+    common.forEach(str => console.log(str));
+}
+
+function _help() {
+    console.log("+-----------+");
+    console.log("| gsch help |");
+    console.log("+-----------+\n");
+
+    Array.from(GRAMMAR.entries()).forEach((command) => {
+        console.log(`${C.BRIGHT}${command[0]} ${command[1][1]}\n${C.RESET}${command[1][2]}\n\n`);
+    });
+}
+
 function _io() {
     app.get_data_modules().forEach((module, i) => {
         console.log(`${i}: ${module.type}`);
     });   
+}
+
+function _leval() {
+    console.log("Oops! I don't do anything yet. Email noah.levenson@consumer.org about this!");
+}
+
+function _lent() {
+    console.log("Oops! I don't do anything yet. Email noah.levenson@consumer.org about this!");
+}
+
+function _lsch() {
+    console.log("Ooops! I don't do anything yet. Email noah.levenson@consumer.org about this!");
+}
+
+function _lstd() {
+    console.log("Oops! I don't do anything yet. Email noah.levenson@consumer.org about this!");
+}
+
+async function _fvalid(path, sch_path) {
+    if (!path || !sch_path) {
+        throw new Error("Missing path");
+    }
+    
+    if (!fs.existsSync(path) ) {
+        throw new Error(`${path} does not exist`);
+    }
+
+    if (!fs.existsSync(sch_path)) {
+        throw new Error(`${sch_path} does not exist`);
+    }
+
+    const res = await Gcapp.valid_ext(path, sch_path);
+
+    if (!res) {
+        console.log(`INVALID: ${path} is not a correct instance of standard ${sch_path}`);
+        return;
+    }
+
+    console.log(`VALID: ${path} is a correct instance of standard ${sch_path}`);
+}
+
+async function _fcmp(path1, path2, sch_path) {
+    if (!path1 || !path2 || !sch_path) {
+        throw new Error("Missing path");
+    }
+    
+    try {
+        // TODO: We deserialize and transform the standards unnecessarily here
+        // just to check the case where they're identical... maybe instead we can refactor
+        // Gcapp.cmp_ext to flag the difference between identical and permuted...
+        const doca_tree = await Gcapp.load_std_ext(path1, sch_path);
+        const docb_tree = await Gcapp.load_std_ext(path2, sch_path);
+
+        if (Gcapp.dhash(doca_tree) === Gcapp.dhash(docb_tree)) {
+            console.log(`Files are identical! SHA256: ${Gcapp.dhash(doca_tree)}`);
+            return;
+        }
+        
+        const res = await Gcapp.cmp_ext(path1, path2, sch_path);
+        
+        if (res.a.length === 0 && res.b.length === 0) {
+            console.log(`Permutation: file ${path1} has the same nodes as file ${path2}, but in a different order.`);
+            return;
+        }
+
+        res.a.forEach((node) => {
+            console.log(`File ${path2} did not have this node:`);
+            console.log(node);
+        });
+
+        res.b.forEach((node) => {
+            console.log(`\nFile ${path1} did not have this node:`);
+            console.log(node);
+        });
+    } catch(err) {
+        throw new Error(err.message);
+    }
+}
+
+async function _parts(path) {
+    if (!path) {
+        throw new Error("Missing path");
+    }
+    
+    const schema = await Gcapp.load_schema_ext(path);
+
+    // TODO: to avoid presenting the user with every single part of a standard schema, we hypothesize that the 
+    // "meaningful" parts of a standard schema are its nonscalar values, see get_nonscalar_keys for a deeper discussion
+    const keys = Gcapp.get_nonscalar_keys(schema);
+    
+    if (keys.length === 0) {
+        console.log("No meaningful parts found!");
+        return;
+    }
+    
+    keys.forEach((key, i) => {
+        console.log(`${i}: ${key}`);
+    });
 }
 
 async function _testplan(subj_path, std_path, eval_path) {
@@ -475,163 +626,8 @@ async function _testplan_to_gs_workbook(tp, std_path) {
     return val;
 }
 
-function _quit() {
-    console.log("Bye!");
-    process.exit();
-}
-
-function _clear() {
-    console.clear();
-}
-
 function _vecs() {
     Gcapp.get_vector_names().forEach((vec) => {
         console.log(vec);
-    });
-}
-
-function _grinfo(path) {
-    if (!path) {
-        throw new Error("Missing path");
-    }
-
-    const group = Gcapp.load_group_ext(path);
-
-    console.log(`${group.name}`);
-    console.log(`(${group.notes})\n`);
-    
-    group.tents.forEach((tent, i) => {
-        console.log(`${i}: ${tent.name}`);
-        console.log(`(${tent.vecs.length} vectors)\n`);
-    });
-    
-    const common = Gcapp.get_common_vecs(group.tents);
-    console.log(`This group contains ${group.tents.length} testable entities which share ${common.length} common vectors:\n`);
-    common.forEach(str => console.log(str));
-}
-
-function _help() {
-    console.log("+-----------+");
-    console.log("| gsch help |");
-    console.log("+-----------+\n");
-
-    Array.from(GRAMMAR.entries()).forEach((command) => {
-        console.log(`${C.BRIGHT}${command[0]} ${command[1][1]}\n${C.RESET}${command[1][2]}\n\n`);
-    });
-}
-
-// TODO: in "the future," leval would grab all the evaluation sets in the currently defined data store... for now, we're just
-// faking some by creating some Gcstd_eval objects in the global scope
-function _leval() {
-    console.log("Oops! I don't do anything yet. Email noah.levenson@consumer.org about this!");
-}
-
-function _lent() {
-    console.log("Oops! I don't do anything yet. Email noah.levenson@consumer.org about this!");
-}
-
-// TODO: in "the future," lsch would query some method at the data I/O layer to retrieve all the standard schemas in the currently
-// defined data store... for this demo, we're faking a world where there's one standard schema in the data store and its ID is 'ds'
-function _lsch() {
-    console.log("Ooops! I don't do anything yet. Email noah.levenson@consumer.org about this!");
-}
-
-function _lstd() {
-    console.log("Oops! I don't do anything yet. Email noah.levenson@consumer.org about this!");
-}
-
-async function _fcmp(path1, path2, sch_path) {
-    if (!path1 || !path2 || !sch_path) {
-        throw new Error("Missing path");
-    }
-    
-    try {
-        // TODO: We deserialize and transform the standards unnecessarily here
-        // just to check the case where they're identical... but maybe we can refactor
-        // Gcapp.cmp_ext to flag the difference between identical and permuted instead...
-        const doca_tree = await Gcapp.load_std_ext(path1, sch_path);
-        const docb_tree = await Gcapp.load_std_ext(path2, sch_path);
-
-        if (Gcapp.dhash(doca_tree) === Gcapp.dhash(docb_tree)) {
-            console.log(`Files are identical! SHA256: ${Gcapp.dhash(doca_tree)}`);
-            return;
-        }
-        
-        const res = await Gcapp.cmp_ext(path1, path2, sch_path);
-        
-        if (res.a.length === 0 && res.b.length === 0) {
-            console.log(`Permutation: file ${path1} has the same nodes as file ${path2}, but in a different order.`);
-            return;
-        }
-
-        res.a.forEach((node) => {
-            console.log(`File ${path2} did not have this node:`);
-            console.log(node);
-        });
-
-        res.b.forEach((node) => {
-            console.log(`\nFile ${path1} did not have this node:`);
-            console.log(node);
-        });
-    } catch(err) {
-        throw new Error(err.message);
-    }
-}
-
-async function _fvalid(path, sch_path) {
-    if (!path || !sch_path) {
-        throw new Error("Missing path");
-    }
-    
-    if (!fs.existsSync(path) ) {
-        throw new Error(`${path} does not exist`);
-    }
-
-    if (!fs.existsSync(sch_path)) {
-        throw new Error(`${sch_path} does not exist`);
-    }
-
-    const res = await Gcapp.valid_ext(path, sch_path);
-
-    if (!res) {
-        console.log(`INVALID: ${path} is not a correct instance of standard ${sch_path}`);
-        return;
-    }
-
-    console.log(`VALID: ${path} is a correct instance of standard ${sch_path}`);
-}
-
-async function _checkset(eval_path, std_path) {
-    if (!eval_path || !std_path) {
-        throw new Error("Missing path");
-    }
-    
-    const res = await Gcapp.checkset_ext(eval_path, std_path);
-    res.resolved.forEach(part => console.log(part));
-    console.log(`${eval_path} selects ${res.resolved.length} of ${res.total_nodes} total nodes in ${std_path}`);
-
-    if (res.unresolved.length === 0) {
-        console.log(`SUCCESS: All ${res.total_evals} links were resolved in ${std_path}!`);
-    } else {
-        console.log(`WARNING: ${res.unresolved.length} links could not be resolved in ${std_path}`);
-    }
-}
-
-async function input_handler(input) {
-    if (input.length > 0) {
-        await _on_input(input);  
-    }
-
-    rl.prompt();
-}
-
-function press_any_key() {
-    return new Promise((resolve, reject) => {
-        rl.removeListener("line", input_handler);
-        
-        rl.once("line", (input) => {
-            rl.on("line", input_handler);
-            resolve(input);
-        });
     });
 }

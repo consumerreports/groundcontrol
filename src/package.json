@@ -12,5 +12,8 @@
     "googleapis": "^39.2.0",
     "js-yaml": "^3.14.0",
     "jsonschema": "^1.2.6"
+  },
+  "devDependencies": {
+    "jsdoc": "^3.6.6"
   }
 }

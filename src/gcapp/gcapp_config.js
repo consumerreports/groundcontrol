@@ -1,8 +1,20 @@
+/**
+* Global configuration
+* @namespace gcapp_config
+*/
+
 "use strict";
 
 const gcutil = require("../gcutil/gcutil.js");
 
-// You probably don't want to call this directly - use the Gcapp convenience wrapper
+/**
+* Systemwide default hash function.
+* You probably shouldn't call this directly - prefer TK LINK TO GCAPP.DHASH
+* @function DEFAULT_HASH
+* @param {any} data - the value to hash
+* @returns {string}
+* @memberof gcapp_config
+*/
 const DEFAULT_HASH = function(data) {
     if (typeof data !== "string") {
         data = JSON.stringify(data);
@@ -11,7 +23,11 @@ const DEFAULT_HASH = function(data) {
     return gcutil.sha256(data);
 }
 
-// Our controlled vocabulary of vector names - don't fetch this directly, use Gcapp.get_vector_names
+/**
+* Systemwide vector definitions.
+* You probably shouldn't fetch this directly - prefer TK LINK TO GCAPP.GET_VECTOR_NAMES
+* @memberof gcapp_config
+*/
 const VECTORS = {
     UI_AUTH: "UI_AUTH",
     PW_COMPLEXITY: "PW_COMPLEXITY",

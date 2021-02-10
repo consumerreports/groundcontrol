@@ -91,11 +91,16 @@ Gcapp.get_node_hash = function(std, n) {
     })[0];
 }
 
-// Compare 2 Gcntrees and return an array representing the asymmetric difference between tree a and tree b
-// TODO: this is O(a * b), right? and it's always worst case bc we don't have a mechanism to terminate DFS early
-// here's a way we could beat that: create a binary search tree of the hashes of each of the nodes in tree b, then
-// you can check for the intersection of nodes in O(h) -- maybe setup costs ain't worth it tho...
+/**
+* Compute the asymmetric difference between Gcntree A and Gcntree B
+* @static
+* @param {Object} a - Gcntree A
+* @param {Object} b - Gcntree B
+* @returns {Array} 
+*/
 Gcapp.asymdif = function(a, b) {
+    // TODO: this is O(a * b), right? and it's always worst case bc we don't terminate DFS early
+    // maybe create a BST of hashes and check in O(h)?
     return a.dfs((node, bad_nodes) => {
         const hash_a = Gcapp.dhash(node.data);
         let found = false;
@@ -114,8 +119,14 @@ Gcapp.asymdif = function(a, b) {
     });
 }
 
-// Convenience function to create an evaluation set from a standard (as a Gcntree) and a list of node numbers
-// Returns a Gcstd_eval object
+/**
+* Create an evaluation set from a standard
+* @static
+* @param std {Object} - the standard to derive evaluations from
+* @param nums {Array} - an array of absolute node numbers
+* @param name {string=} - name for the evaluation set
+* @returns {Object} TK REPLACE WITH Gcstd_eval TYPE 
+*/
 Gcapp.make_eval_set = function(std, nums = [], name = "") {
     if (nums.length === 0) {
         throw new Error("You must specify at least one node to create an evaluation set");
@@ -124,9 +135,14 @@ Gcapp.make_eval_set = function(std, nums = [], name = "") {
     return Gcstd_eval.from_nodes({std: std, nums: nums, name: name});
 }
 
-// Write an evaluation set (as a Gcstd_eval object) to disk in YML format
-// Returns the path to the output file as a string
-Gcapp.write_eval_set_ext = function(es, notes) {
+/**
+* Write an evaluation set to disk in YML format
+* @static
+* @param es {Object} - a Gcstd_eval object
+* @param notes {str} - data for the notes field
+* @returns {string} output path
+*/
+Gcapp.write_eval_set_ext = function(es, notes = "") {
     const output = {
         eval: es.name,
         notes: notes,
@@ -140,8 +156,12 @@ Gcapp.write_eval_set_ext = function(es, notes) {
     return output_path;
 }
 
-// Load an evaluation set from an external YML file, validate its structure
-// Returns the deserialized evaluation set as a Gcstd_eval object
+/**
+* Load an evaluation set from a YML file
+* @static
+* @param path {string} path to an evaluation set in YML format
+* @returns {Object} TK REPLACE WITH Gcstd_eval TYPE
+*/
 Gcapp.load_eval_set_ext = function(path) {
     // TODO: what happens if errors?
     const doc = fs.readFileSync(path, {encoding: "utf8"});
@@ -158,8 +178,12 @@ Gcapp.load_eval_set_ext = function(path) {
     return es;
 }
 
-// Load a testable entity from an external YML file, validate its structure and vec definitions
-// Returns the deserialized testable entity
+/** 
+* Load a testable entity from a YML file
+* @static
+* @param path {string} path to a testable entity in YML format
+* @returns {Object} TK REPLACE WITH Gctax_tent TYPE
+*/
 Gcapp.load_tent_ext = function(path) {
     // TODO: what happens if errors happen during file I/O or deserialization?
     const doc = fs.readFileSync(path, {encoding: "utf8"});
@@ -178,8 +202,12 @@ Gcapp.load_tent_ext = function(path) {
     return new Gctax_tent({name: json.tent, notes: json.notes, vecs: json.vecs.map(vec => vec.vec)});
 }
 
-// Load a group from an external YML file, validate its structure and constituent testable entities
-// assumes that testable entities are referenced using relative pathnames
+/**
+* Load a group from a YML file
+* @static
+* @param path {string} path to a group in YML format (assumes relative pathnames)
+* @returns {Object} TK REPLACE WITH Gctax_group TYPE
+*/
 Gcapp.load_group_ext = function(path) {
     // TODO: what happens if errors happen during file I/O or deserialization?
     const doc = fs.readFileSync(path, {encoding: "utf8"});
@@ -196,10 +224,13 @@ Gcapp.load_group_ext = function(path) {
     });
 }
 
-// Load a standard from an external YML file, optionally validate its schema
-// If the module at schema_path exports multiple schema objects, we consider the order of exports:
-// the 0th object is considered the parent schema, the following objects are registered as its children
-// Returns the deserialized standard as a Gcntree
+/**
+* Load a standard from a YML file
+* @static
+* @param std_path {string} path to a standard in YML format
+* @param schema_path {string=} path to a standard schema for validation (if the schema module exports multiple objects, the 0th is consdered the parent and the following are registered as children)
+* @returns {Object} TK REPLACE WITH Gcntree TYPE
+*/
 Gcapp.load_std_ext = async function(std_path, schema_path = null) {
     // TODO: what happens if errors?
     const doc = fs.readFileSync(std_path, {encoding: "utf8"});
@@ -226,16 +257,25 @@ Gcapp.load_std_ext = async function(std_path, schema_path = null) {
     return Gcntree.from_json_doc(ymldoc, Gcntree.trans.to_obj);
 }
 
-// Load a standard schema as an external file
-// Returns a schema object
+/**
+* Load a standard schema (in jsonschema format) from disk
+* @static
+* @param path {string} path to an importable JavaScript module
+* @returns {Object} a jsonschema object
+*/
 Gcapp.load_schema_ext = async function(path) {
     const sch = await import(path);
     return sch.default;
 }
 
-// Generate a testplan from data provded as external YML files
-// Returns a Gcapp_tp_res object which wraps a Map where the keys are vector names and 
-// the values are arrays where each element is a part of a standard
+/**
+* Generate a testplan from YML files
+* @static
+* @param subj_path {string} path to a testable entity OR group in YML format
+* @param std_path {string} path to a standard in YML format
+* @param eval_path {string} path to an evaluation set in YML format
+* @returns {Object} TK REPLACE WITH Gcapp_tp_res TYPE
+*/
 Gcapp.testplan_ext = function(subj_path, std_path, eval_path) {
     // TODO: This function should prob let you specify a vector mapping? The help text currently says it
     // uses the default vector mapping... for now, let's just load the vector map we created in the global scope for testing
@@ -338,8 +378,15 @@ Gcapp.testplan_ext = function(subj_path, std_path, eval_path) {
     });
 }
 
-// Compute the absolute node numbers for one "part" of an external standard file as defined using the "parts" command
-// Returns an object with some metadata which wraps an array of [node_num, node_data, path_to_node] arrays
+/**
+* Compute the absolute node numbers for one "part" of a standard file (in YML format).
+* To enumerate parts of a standard, @see {@link} 
+* @static
+* @param std_path {string} path to a standard in YML format
+* @param sch_path {string} path to the standard schema for standard std_path
+* @param part_id {number} part ID as enumerated by {@link}
+* @returns {Object} object.nodes is an array of [node numbers, node data, path to node] arrays
+*/
 Gcapp.num_ext = async function(std_path, sch_path, part_id) {
     // Get the property name for the part code we're interested in
     const schema = await Gcapp.load_schema_ext(sch_path);

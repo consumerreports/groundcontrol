@@ -525,6 +525,8 @@ Gcapp.prototype.get_data_modules = function() {
 // rest: Will a typical organization test against different kinds of standards, or just one standard?
 // Vector maps necessitate standard homogeneity -- so if you test against different standards, you need
 // a vector map for each one...
+
+/*
 const doc = fs.readFileSync("../../temp/ds_103020.yml", {encoding: "utf8"});
 const ymldoc = yaml.safeLoad(doc, "utf8");
 const doc_tree = Gcntree.from_json_doc(ymldoc, Gcntree.trans.to_obj);
@@ -542,6 +544,8 @@ cr_vec_map.add_link(gc.VECTORS.ENCRYPTION, Gcapp.get_node_hash(doc_tree, 386));
 cr_vec_map.add_link(gc.VECTORS.KNOWN_VULNERABILITY_CVE_CHECKS, Gcapp.get_node_hash(doc_tree, 394));
 cr_vec_map.add_link(gc.VECTORS.AUTO_SECURITY_UPDATES, Gcapp.get_node_hash(doc_tree, 418));
 cr_vec_map.add_link(gc.VECTORS.SECURITY_UPDATE_NOTIFICATION, Gcapp.get_node_hash(doc_tree, 421));
+*/
+
 // Below is a case where an indicator actually has multiple indicators concatenated together as one long string; node #386 holds
 // indicators that cover DS parts S.4.1.2 and S.4.1.1 and it looks like a few more -- not sure what to do with these, so 
 // we're just skipping them

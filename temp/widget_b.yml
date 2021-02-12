@@ -1,0 +1,14 @@
+tent: Widget model B
+notes: This widget is a bit unique in that it has a camera and microphone, no USB port, and it uses NFC
+vecs: 
+    - vec: ACCOUNT
+    - vec: WEB_ACCESS
+    - vec: CONNECTED_DEVICE
+    - vec: WIRELESS
+    - vec: WIRED
+    - vec: CLOUD_STORAGE
+    - vec: INTERNET
+    - vec: BLUETOOTH
+    - vec: CAMERA
+    - vec: MICROPHONE
+    - vec: NFC

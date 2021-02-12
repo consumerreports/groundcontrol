@@ -1,0 +1,12 @@
+tent: Widget model A
+notes: This widget is a pretty standard widget
+vecs:
+    - vec: ACCOUNT
+    - vec: WEB_ACCESS
+    - vec: CONNECTED_DEVICE
+    - vec: WIRELESS
+    - vec: WIRED
+    - vec: USB
+    - vec: CLOUD_STORAGE
+    - vec: INTERNET
+    - vec: BLUETOOTH

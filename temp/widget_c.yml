@@ -1,0 +1,11 @@
+tent: Widget model C
+notes: This widget is pretty standard except for its lack of bluetooth
+vecs:
+    - vec: ACCOUNT
+    - vec: WEB_ACCESS
+    - vec: CONNECTED_DEVICE
+    - vec: WIRELESS
+    - vec: WIRED
+    - vec: USB
+    - vec: CLOUD_STORAGE
+    - vec: INTERNET

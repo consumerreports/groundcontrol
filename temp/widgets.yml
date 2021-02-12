@@ -1,0 +1,6 @@
+group: Widgets
+notes: This group contains all 3 of the widgets we test
+tent_paths:
+    - tent_path: widget_a.yml
+    - tent_path: widget_b.yml
+    - tent_path: widget_c.yml

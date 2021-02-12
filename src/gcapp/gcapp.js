@@ -519,32 +519,26 @@ Gcapp.prototype.get_data_modules = function() {
     return this.data_modules;
 }
 
-// TODO: We haven't yet figured out where vector maps should live... should there be a default map
-// that lives on every instance of Gcapp? Or should vector maps be more like standards and tents,
-// they're data that you can script as YML or keep in the datastore? The big question that informs the 
-// rest: Will a typical organization test against different kinds of standards, or just one standard?
-// Vector maps necessitate standard homogeneity -- so if you test against different standards, you need
-// a vector map for each one...
-
-/*
+// TODO: this is a temporary and nonsensical vector map for demo purposes only
+// we just take a bunch of nodes from the "Data Security" section and map em to arbitrary vectors
+// gotta delete this and replace with an on-disk representation
 const doc = fs.readFileSync("../../temp/ds_103020.yml", {encoding: "utf8"});
 const ymldoc = yaml.safeLoad(doc, "utf8");
 const doc_tree = Gcntree.from_json_doc(ymldoc, Gcntree.trans.to_obj);
 const cr_vec_map = new Gctax_vec_map({name: "Consumer Reports Privacy & Security Testing"});
-cr_vec_map.add_link(gc.VECTORS.UI_AUTH, Gcapp.get_node_hash(doc_tree, 311));
-cr_vec_map.add_link(gc.VECTORS.PW_COMPLEXITY, Gcapp.get_node_hash(doc_tree, 357));
-cr_vec_map.add_link(gc.VECTORS.PW_COMPLEXITY, Gcapp.get_node_hash(doc_tree, 360));
-cr_vec_map.add_link(gc.VECTORS.PW_COMPLEXITY, Gcapp.get_node_hash(doc_tree, 363));
-cr_vec_map.add_link(gc.VECTORS.UI_AUTH, Gcapp.get_node_hash(doc_tree, 342));
-cr_vec_map.add_link(gc.VECTORS.PW_COMPLEXITY, Gcapp.get_node_hash(doc_tree, 352));
-cr_vec_map.add_link(gc.VECTORS.NOTIFICATION_MECHANISM, Gcapp.get_node_hash(doc_tree, 369));
-cr_vec_map.add_link(gc.VECTORS.NOTIFICATION_MECHANISM, Gcapp.get_node_hash(doc_tree, 372));
-cr_vec_map.add_link(gc.VECTORS.ATTACK_PROTECTION, Gcapp.get_node_hash(doc_tree, 378));
-cr_vec_map.add_link(gc.VECTORS.ENCRYPTION, Gcapp.get_node_hash(doc_tree, 386));
-cr_vec_map.add_link(gc.VECTORS.KNOWN_VULNERABILITY_CVE_CHECKS, Gcapp.get_node_hash(doc_tree, 394));
-cr_vec_map.add_link(gc.VECTORS.AUTO_SECURITY_UPDATES, Gcapp.get_node_hash(doc_tree, 418));
-cr_vec_map.add_link(gc.VECTORS.SECURITY_UPDATE_NOTIFICATION, Gcapp.get_node_hash(doc_tree, 421));
-*/
+cr_vec_map.add_link(gc.VECTORS.ACCOUNT, Gcapp.get_node_hash(doc_tree, 311));
+cr_vec_map.add_link(gc.VECTORS.WEB_ACCESS, Gcapp.get_node_hash(doc_tree, 357));
+cr_vec_map.add_link(gc.VECTORS.WEB_ACCESS, Gcapp.get_node_hash(doc_tree, 360));
+cr_vec_map.add_link(gc.VECTORS.CONNECTED_DEVICE, Gcapp.get_node_hash(doc_tree, 363));
+cr_vec_map.add_link(gc.VECTORS.WIRELESS, Gcapp.get_node_hash(doc_tree, 342));
+cr_vec_map.add_link(gc.VECTORS.WIRED, Gcapp.get_node_hash(doc_tree, 352));
+cr_vec_map.add_link(gc.VECTORS.INTERNET, Gcapp.get_node_hash(doc_tree, 369));
+cr_vec_map.add_link(gc.VECTORS.INTERNET, Gcapp.get_node_hash(doc_tree, 372));
+cr_vec_map.add_link(gc.VECTORS.USB, Gcapp.get_node_hash(doc_tree, 378));
+cr_vec_map.add_link(gc.VECTORS.USB, Gcapp.get_node_hash(doc_tree, 386));
+cr_vec_map.add_link(gc.VECTORS.LOCAL_STORAGE, Gcapp.get_node_hash(doc_tree, 394));
+cr_vec_map.add_link(gc.VECTORS.CAMERA, Gcapp.get_node_hash(doc_tree, 418));
+cr_vec_map.add_link(gc.VECTORS.MICROPHONE, Gcapp.get_node_hash(doc_tree, 421));
 
 // Below is a case where an indicator actually has multiple indicators concatenated together as one long string; node #386 holds
 // indicators that cover DS parts S.4.1.2 and S.4.1.1 and it looks like a few more -- not sure what to do with these, so 

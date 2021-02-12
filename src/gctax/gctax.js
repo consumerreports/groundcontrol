@@ -19,7 +19,7 @@ function get_common_vecs(tents) {
         });
     });
     
-    return Array.from(vectors.entries()).filter(keyval => keyval[1] > 1).map(keyval => keyval[0]);
+    return Array.from(vectors.entries()).filter(keyval => keyval[1] === tents.length).map(keyval => keyval[0]);
 }
 
 module.exports.get_vector_names = get_vector_names;

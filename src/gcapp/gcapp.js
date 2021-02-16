@@ -120,6 +120,32 @@ Gcapp.asymdif = function(a, b) {
 }
 
 /**
+* Write a vector map to disk in YML format
+* @static
+* @param vec_map {Object} - a Gctax_vec_map object
+* @param notes {str} - data for the notes field
+* @returns {string} output path
+*/
+Gcapp.write_vec_map_ext = function(vec_map, notes = "") {
+    const output = {
+        vec_map: vec_map.name,
+        notes: notes,
+        vecs: Array.from(vec_map.data.entries()).map((entry) => {
+            return {
+                vec_name: entry[0], 
+                hash_list: entry[1].map(hash => Object.fromEntries([["hash", hash]]))
+            };
+        }) 
+    };
+
+    const output_path = `${process.cwd()}/../../out/vec_map_${Date.now()}.yml`;
+    
+    // TODO: what happens on error?
+    fs.writeFileSync(output_path, yaml.dump(output));
+    return output_path;
+}
+
+/**
 * Create an evaluation set from a standard
 * @static
 * @param std {Object} - the standard to derive evaluations from
@@ -149,7 +175,7 @@ Gcapp.write_eval_set_ext = function(es, notes = "") {
         set: Array.from(es.set.values()).map(hash => Object.fromEntries([["hash", hash]]))
     };
     
-    const output_path = `${process.cwd()}/../../out/${Date.now()}.yml`;
+    const output_path = `${process.cwd()}/../../out/eval_set_${Date.now()}.yml`;
     
     // TODO: what happens on error?
     fs.writeFileSync(output_path, yaml.dump(output));

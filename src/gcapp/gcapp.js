@@ -120,6 +120,32 @@ Gcapp.asymdif = function(a, b) {
 }
 
 /**
+* Create a vector map from a standard
+* @static
+* @param std {Object} - the standard to derive mappings from
+* @param nums {Array} - a 2D array of absolute node numbers, where the array at nums[i] corresponds to the ith 
+* vector name returned by Gcapp.get_vector_names
+* @param name {string=} - name for the vector map
+* @returns {Object} TK REPLACE WITH Gctax_vec_map TYPE
+*/
+Gcapp.make_vec_map = function(std, nums = [], name = "") {
+    const vecs = Gcapp.get_vector_names();
+
+    // Very basic validation - are there as many columns as we have vectors?
+    if (nums.length !== vecs.length) {
+        throw new Error("Vectors length mismatch");
+    }
+    
+    const vec_map = new Gctax_vec_map({name: name});
+
+    nums.forEach((num_arr, i) => {
+        num_arr.forEach(num => vec_map.add_link(vecs[i], Gcapp.get_node_hash(std, num)));
+    });
+
+    return vec_map;
+}
+
+/**
 * Write a vector map to disk in YML format
 * @static
 * @param vec_map {Object} - a Gctax_vec_map object

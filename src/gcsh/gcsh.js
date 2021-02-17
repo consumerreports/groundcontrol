@@ -9,6 +9,13 @@ const PROMPT = "gcsh > ";
 
 // {key: command, val: [function, help parameter list, help copy]]}
 const GRAMMAR = new Map([
+    ["debug",
+        [
+            _debug,
+            "",
+            "Debug function - don't execute unless you know what you're doing"
+        ]
+    ],
     ["quit", 
         [
             _quit,
@@ -127,6 +134,13 @@ const GRAMMAR = new Map([
             "",
             "Display the vector names known to this version of Ground Control"
         ]
+    ],
+    ["vmake",
+        [
+            _vmake,
+            "[std path] [node1] [node2] [node3] ...",
+            "Create a new vector map and write it to disk in YAML format"
+        ]
     ]
 ]);
 
@@ -197,7 +211,24 @@ app.init().then(() => {
     rl.prompt();
 });
 
+
+
 // *** Command handlers, in order of appearance in the grammar ***
+
+async function _debug() {
+    const vecs = Gcapp.get_vector_names();
+    const doc_tree = await Gcapp.load_std_ext("/home/noah/work/groundcontrol/temp/ds_103020.yml");
+    
+    const nums = vecs.map(vec => []);
+
+    nums[3].push(40);
+    nums[3].push(42);
+    nums[10].push(100);
+    nums[12].push(13);
+
+    const vec_map = Gcapp.make_vec_map(doc_tree, nums, "My test vector map")
+    console.log(vec_map);
+}
 
 function _quit() {
     console.log("Bye!");
@@ -631,3 +662,14 @@ function _vecs() {
         console.log(vec);
     });
 }
+
+async function _vmake(std_path, ...nums) {
+    if (!std_path) {
+        throw new Error("Missing path");
+    }
+    
+    const doc_tree = await Gcapp.load_std_ext(std_path);
+    const vec_map = Gcapp.make_eval_set(doc_tree, nums.map(num => parseInt(num)), "Untitled Vector Map");
+    console.log(`Success! Output: ${Gcapp.write_eval_set_ext(es, "Created by gcsh vmake")}`);
+}
+

@@ -56,6 +56,10 @@ Ground Control can use the Google Sheets API to write and fetch data; this funct
 
 **gcutil**: Runtime utilities like hashing and debugging functions, but also dev utilities like file transformers and such
 
+### Dependencies
+
+TK - list dependencies here, explain why we're using them... jsonschema, js-yaml, googleapis@39, jsdoc as a dev dependency, anything else?  
+
 ### TODO
 
 - go through all the TODOs. there are a lot!

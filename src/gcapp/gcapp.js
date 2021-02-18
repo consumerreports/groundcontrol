@@ -172,6 +172,36 @@ Gcapp.write_vec_map_ext = function(vec_map, notes = "") {
 }
 
 /**
+* Load a vector map from a YML file
+* @static
+* @param path {string} path to a vector map in YML format
+* @returns {Object} TK REPLACE WITH Gctax_vec_map TYPE
+*/
+Gcapp.load_vec_map_ext = function(path) {
+    // TODO: what happens if errors?
+    const doc = fs.readFileSync(path, {encoding: "utf8"});
+    const json = yaml.safeLoad(doc, "utf8");
+
+    if (!Gctax_vec_map.is_valid(json)) {
+        throw new Error(`${path} is not a valid vector map`);
+    }
+    
+    // TODO: We enforce a simple rule: any vector map file must have exactly the same vector vocabulary
+    // as the currently running version of GC - however, it may instead be preferable to allow 
+    // files which have a valid subset of our vector vocabulary...
+    const system_vecs = new Set(Gcapp.get_vector_names());
+    const present_vecs = json.vecs.map(vec => vec.vec_name) 
+    
+    if (present_vecs.length !== system_vecs.size || !present_vecs.every(vec => system_vecs.has(vec))) {
+        throw new Error(`${path} is a mismatch for system vectors`);
+    }
+    
+    const vec_map = new Gctax_vec_map({name: json.vec_map});
+    json.vecs.forEach(vec => vec.hash_list.forEach(hash => vec_map.add_link(vec.vec_name, hash.hash))); 
+    return vec_map;    
+}
+
+/**
 * Create an evaluation set from a standard
 * @static
 * @param std {Object} - the standard to derive evaluations from

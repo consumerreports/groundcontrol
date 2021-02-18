@@ -221,6 +221,8 @@ app.init().then(() => {
 
 async function _debug() {
     // TODO: get rid of the debug function here and in the grammar
+    const vec_map = Gcapp.load_vec_map_ext("/home/noah/work/groundcontrol/out/vec_map_1613681180742.yml");
+    console.log(vec_map);
 }
 
 function _quit() {

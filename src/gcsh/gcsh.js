@@ -138,8 +138,8 @@ const GRAMMAR = new Map([
     ["vmake",
         [
             _vmake,
-            "[std path] [node1] [node2] [node3] ...",
-            "Create a new vector map and write it to disk in YAML format"
+            "[std path]",
+            "Interactively create a new vector map and write it to disk in YAML format"
         ]
     ]
 ]);
@@ -175,10 +175,14 @@ async function input_handler(input) {
     rl.prompt();
 }
 
-function press_any_key() {
+function press_any_key(prompt = false) {
     return new Promise((resolve, reject) => {
         rl.removeListener("line", input_handler);
         
+        if (prompt) {
+            rl.prompt();
+        }
+
         rl.once("line", (input) => {
             rl.on("line", input_handler);
             resolve(input);
@@ -216,18 +220,7 @@ app.init().then(() => {
 // *** Command handlers, in order of appearance in the grammar ***
 
 async function _debug() {
-    const vecs = Gcapp.get_vector_names();
-    const doc_tree = await Gcapp.load_std_ext("/home/noah/work/groundcontrol/temp/ds_103020.yml");
-    
-    const nums = vecs.map(vec => []);
-
-    nums[3].push(40);
-    nums[3].push(42);
-    nums[10].push(100);
-    nums[12].push(13);
-
-    const vec_map = Gcapp.make_vec_map(doc_tree, nums, "My test vector map")
-    console.log(vec_map);
+    // TODO: get rid of the debug function here and in the grammar
 }
 
 function _quit() {
@@ -663,13 +656,27 @@ function _vecs() {
     });
 }
 
-async function _vmake(std_path, ...nums) {
+async function _vmake(std_path) {
+    async function _step(vecs, nums = [], i = 0) {
+        if (i === vecs.length) {
+            return nums;
+        }
+
+        console.log(`\nEnter space-separated node numbers for vector ${vecs[i]} (${i + 1}/${vecs.length})`)
+        const res = await press_any_key(true);
+        
+        // TODO: This sanitizer gets rid of extra whitespace but it doesn't handle NaN
+        nums.push(res.split(" ").filter(tok => tok.trim().length > 0).map(tok => parseInt(tok)));
+        return await _step(vecs, nums, i + 1);
+    }
+
     if (!std_path) {
         throw new Error("Missing path");
     }
     
+    const nums = await _step(Gcapp.get_vector_names());
     const doc_tree = await Gcapp.load_std_ext(std_path);
-    const vec_map = Gcapp.make_eval_set(doc_tree, nums.map(num => parseInt(num)), "Untitled Vector Map");
-    console.log(`Success! Output: ${Gcapp.write_eval_set_ext(es, "Created by gcsh vmake")}`);
+    const vec_map = Gcapp.make_vec_map(doc_tree, nums, "Untitled Vector Map");
+    console.log(`Success! Output: ${Gcapp.write_vec_map_ext(vec_map, "Created by gcsh vmake")}`);
 }
 

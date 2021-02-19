@@ -124,8 +124,8 @@ const GRAMMAR = new Map([
     ["testplan",
         [
             _testplan,
-            "[subject path] [std path] [eval path]",
-            "Generate the evaluation suite for a single testable entity or group, standard, and evaluation set (using the default vector mapping); specifying no evaluation set will apply the entire standard"
+            "[subject path] [std path] [vec map path] [eval path]",
+            "Generate the evaluation suite for a single testable entity or group, standard, evaluation set, and vector map; specifying no evaluation set will apply the entire standard"
         ]
     ],
     ["vecs",
@@ -414,8 +414,8 @@ async function _parts(path) {
     });
 }
 
-async function _testplan(subj_path, std_path, eval_path) {
-    const res = Gcapp.testplan_ext(subj_path, std_path, eval_path);
+async function _testplan(subj_path, std_path, vec_map_path, eval_path) {
+    const res = Gcapp.testplan_ext(subj_path, std_path, vec_map_path, eval_path);
     
     if (res.is_group) {
         console.log(`\nGROUP: '${res.subj.name}' (${res.subj.tents.map(tent => tent.name).join(", ")})`);

@@ -355,18 +355,16 @@ Gcapp.load_schema_ext = async function(path) {
 * @static
 * @param subj_path {string} path to a testable entity OR group in YML format
 * @param std_path {string} path to a standard in YML format
+* @param vec_map_path {string} path to a vector map in YML format
 * @param eval_path {string} path to an evaluation set in YML format
 * @returns {Object} TK REPLACE WITH Gcapp_tp_res TYPE
 */
-Gcapp.testplan_ext = function(subj_path, std_path, eval_path) {
-    // TODO: This function should prob let you specify a vector mapping? The help text currently says it
-    // uses the default vector mapping... for now, let's just load the vector map we created in the global scope for testing
-    const vec_map = cr_vec_map;
-    
-    if (!subj_path || !std_path) {
+Gcapp.testplan_ext = function(subj_path, std_path, vec_map_path, eval_path) {
+    if (!subj_path || !std_path || !vec_map_path) {
         throw new Error("Missing path");
     }
-
+    
+    const vec_map = Gcapp.load_vec_map_ext(vec_map_path);
     const eval_set = eval_path ? Gcapp.load_eval_set_ext(eval_path) : null;
     
     // Deserialize the file for the test subject and determine if it's a tent or a group

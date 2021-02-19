@@ -1,0 +1,84 @@
+vec_map: Untitled Vector Map
+notes: This is a test vec map which randomly assigns indicators to vectors
+vecs:
+  - vec_name: ACCOUNT
+    hash_list:
+      - hash: dcb2ff4d3e8367a75bee0a7a9cd9493a8f27829654a3aa0e87c7ebab35ba5897
+      - hash: 86937245338a593ffcfc18a1a3cbfaa62f38bb94633990e2d73c63e8e7a64344
+  - vec_name: MICROPHONE
+    hash_list:
+      - hash: 886d2832ee0e7868226b030d30d35db22f83eae9ef1daca6caf6b955b91f14e9
+      - hash: e95d7da8bd8ee5353f9b481e82de80b322e2e437ff9cff3fc3af08fe7276d2b8
+      - hash: 9206080e55581f50e019132086992def8f5375876767c5f1a9d3a23bf7fd94a6
+  - vec_name: CAMERA
+    hash_list:
+      - hash: 9a0e7155cea612b9cce6e160b11356e32bc3fc7f691c2d2cd7aac64035700293
+      - hash: df19ee395eb3ee2719878e79b91485d65d3ea178b145539173d38e6e3706fc8b
+      - hash: 97f5752fe4f6b23e02930446a50862daebe9ef3f99e56fe035d34986d1ccae5c
+  - vec_name: BIOMETRIC_SENSORS
+    hash_list:
+      - hash: 4827c1ccaa6391821e139b3b78c1c075b389312fb124af100e71a8223be01fdd
+  - vec_name: MOBILE_APP
+    hash_list:
+      - hash: a91b9e22a8dcdc1293dd2cb8996c2aadc21df569168554dc482c4204f59dc7b6
+      - hash: abd89fadb82fa6c79de1c89c0731d5de321a0881516f0f95227fef9f87426c6e
+  - vec_name: WEB_ACCESS
+    hash_list:
+      - hash: dfddaf0c95b013800449820e453b339f30ba974e21abdc63f51c3f3f63bac189
+      - hash: bff655a8840ae9337c5397a00ad64e07cbe0113471d751b3a8ce7bfe12af8b9f
+  - vec_name: CONNECTED_DEVICE
+    hash_list:
+      - hash: 0c0f5beb5873c70265351765433e9216f90465f20f7f647f08aea8d96d06e510
+  - vec_name: PERSONAL_INFO
+    hash_list:
+      - hash: b5d0546fa7621a95497528feb251577621b4af17a8832c898f6d5af5f68e6118
+  - vec_name: HEALTH_INFO
+    hash_list:
+      - hash: a8861e43c8b557284d0066a0a4ff726971f042a52f36664548454e7c65eedfae
+  - vec_name: LOCATION_INFO
+    hash_list:
+      - hash: 6e198bba5e46d5314594f12242981e54c1a469e32223dfab1731ce49ca1dc0ec
+      - hash: acbdb984764fb8ab2c2a0920e7b07f8e9ce557ac079e15f09236ec02b372b163
+  - vec_name: FINANCIAL_INFO
+    hash_list:
+      - hash: 3d12b301d133847c560adeb37e8a3b7f992076f899237eea347b2716bf9a653e
+  - vec_name: WIRELESS
+    hash_list:
+      - hash: d7250a7a78cde465ac6b892898371d7d6b9d6efd9c24d28264ade4f86b516eb1
+  - vec_name: WIRED
+    hash_list:
+      - hash: 67a0b647509eb7b828d6f256ebcbca95f27ecc972a42d80fd4e17c9d4d88b8df
+  - vec_name: LOCAL_NETWORK
+    hash_list:
+      - hash: c3172037e16c63c11536e68fd5cec7b39bafce3efba463777ca7a7274cddc30f
+  - vec_name: INTERNET
+    hash_list:
+      - hash: 4d448a9a73ff1636e293db59eace4b466ee9308e51e5aff3e672a2f4f7eb6be7
+      - hash: 2be5b950b59d55a0ce152e76cb91c9a2910d48eec8e2e2712835ba780b1a0828
+  - vec_name: BLUETOOTH
+    hash_list:
+      - hash: 623fe03ba460df9943fb22dc7a0823e188393924db4b5cec11060a873b31a9a1
+  - vec_name: USB
+    hash_list:
+      - hash: 64ca03805f17612c74e1aa888aa516d14dee7b10700c83adafdf00d4490177c7
+  - vec_name: ZWAVE
+    hash_list:
+      - hash: 32e903b3e096f1cd01cc4187193d348209fb02374503055c3f08ec93d26a389a
+      - hash: 28c5c41d123c4540cf6247772601549d4e49ba0ff6e931d4245a82d210098175
+  - vec_name: NFC
+    hash_list:
+      - hash: 2314edc261a41330ff30b37a9a62028dc1139c054029ac495100bf770c8c66de
+      - hash: 4bd551238316dc10cb755fe8e102fe65a0ed9ce8d40de2569f9601f12d69487b
+      - hash: 2e8bb42ff853a8419c897fd9c558c6b52e083f40682c04690fe8dd50bdeee823
+  - vec_name: LOCAL_STORAGE
+    hash_list:
+      - hash: cbc94a39c0ad617acf9ab5b8f9c8e62281daa6f2f6be6504eaff812f0d9eb9da
+      - hash: 4fc021192b8a1c291f124a8ca501abd52a4ebea4d9873f28306b4dda5b2e3ae7
+  - vec_name: CLOUD_STORAGE
+    hash_list:
+      - hash: dab0f557289cdd1b3569d557dfbd5a58b09eab875ec756eee2d4cbc3010aa9d7
+      - hash: 0152f43de1b78767c4dd2201816f4f5849598074b8f4cedc871ce58c50289457
+      - hash: c70130d5dc3d3ecfe089103b13434f807a8ee3770f22e0ec4a24859b9b74fba0
+  - vec_name: PERIPHERAL_STORAGE
+    hash_list:
+      - hash: 4e3f005cb0fca33b9f8db8fdfcf41bf9192ed902d78de50b8dedcc265ebcc9e1

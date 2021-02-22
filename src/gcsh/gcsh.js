@@ -121,6 +121,13 @@ const GRAMMAR = new Map([
             "Display the meaningful parts of an external standard schema"
         ]
     ],
+    ["search",
+        [
+            _search,
+            "[std path] [string]",
+            "Search an external standard file (in YAML format) for a string and return the node numbers where it was found"
+        ]
+    ],
     ["testplan",
         [
             _testplan,
@@ -412,6 +419,16 @@ async function _parts(path) {
     keys.forEach((key, i) => {
         console.log(`${i}: ${key}`);
     });
+}
+
+async function _search(std_path, ...str) {
+    if (!std_path) {
+        throw new Error("Missing path");
+    }
+
+    const doc_tree = await Gcapp.load_std_ext(std_path);
+    const res = Gcapp.text_search_nodes(doc_tree, str.join(" "));
+    console.log(res);
 }
 
 async function _testplan(subj_path, std_path, vec_map_path, eval_path) {

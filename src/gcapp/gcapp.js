@@ -92,6 +92,27 @@ Gcapp.get_node_hash = function(std, n) {
 }
 
 /**
+* Search the nodes of a standard for a text string, case sensitive
+* @static
+* @param {Object} std - a Gcntree representing a standard
+* @param {string} str - text string to search for
+* @returns {Array} nodes where the string was found, as [number, text]
+*/
+Gcapp.text_search_nodes = function(std, str) {
+    let n = 0;
+    
+    // TODO: this grossly assumes that node.data are constructed using 
+    // the to_obj transformer
+    return std.dfs((node, found) => {
+        if (JSON.stringify(node.data).includes(str)) {
+            found.push([n, node.data]);
+        }
+        
+        n += 1;
+    });
+}
+
+/**
 * Compute the asymmetric difference between Gcntree A and Gcntree B
 * @static
 * @param {Object} a - Gcntree A

@@ -480,13 +480,14 @@ Gcapp.testplan_ext = function(subj_path, std_path, vec_map_path, eval_path) {
 }
 
 /**
-* Compute the absolute node numbers for one "part" of a standard file (in YML format).
-* To enumerate parts of a standard, @see {@link} 
+* Compute the absolute node numbers for one part of a standard file (in YML format).
+* To get part IDs for a standard, see {@link module:gcapp~Gcapp.get_nonscalar_keys}
 * @static
+* @see module:gcapp~Gcapp.get_nonscalar_keys
 * @param std_path {string} path to a standard in YML format
 * @param sch_path {string} path to the standard schema for standard std_path
-* @param part_id {number} part ID as enumerated by {@link}
-* @returns {Object} object.nodes is an array of [node numbers, node data, path to node] arrays
+* @param part_id {number} part ID
+* @returns {Object} object.nodes is an array of [node numbers, node data, path to node]
 */
 Gcapp.num_ext = async function(std_path, sch_path, part_id) {
     // Get the property name for the part code we're interested in
@@ -539,9 +540,15 @@ Gcapp.num_ext = async function(std_path, sch_path, part_id) {
     };
 }
 
-// Compare two external standard files and find the symmetric difference expressed as reciprocal asymmetric differences
-// Returns an object wrapping two arrays: the asymmetric difference of path1 wrt path2, and the asymmetric 
-// difference of path2 wrt path1 -- note that identical standards and permuted standards will return the same result
+/**
+* Find the symmetric difference between the sets of nodes in two external standard files, expressed as reciprocal asymmetric differences.
+* Note that identical standards and permuted standards will return the same result
+* @static
+* @param path1 {string} path to standard A in YML format
+* @param path2 {string} path to standard B in YML format
+* @param sch_path {string} path to the standard schema for both standards
+* @returns {Object} object.a is the asymmetric difference of A and B, object.b is the asymmetric difference of B and A
+*/
 Gcapp.cmp_ext = async function(path1, path2, sch_path) {
     const doca_tree = await Gcapp.load_std_ext(path1, sch_path);
     const docb_tree = await Gcapp.load_std_ext(path2, sch_path);
@@ -556,13 +563,18 @@ Gcapp.cmp_ext = async function(path1, path2, sch_path) {
     };
 }
 
-// Check if an external standard file is a valid instance of a given schema
-// Returns a bool
-// TODO: it'd be nice to emit the errors found in invalid standards, but we gotta refactor load_std_ext to return em
-// TODO: this doesn't discern between an invalid path and an invalid schema
-Gcapp.valid_ext = async function(path, sch_path) {
+/**
+* Validate an external standard file against a standard schema
+* @static
+* @param std_path {string} path to a standard in YML format
+* @param sch_path {string} path to the standard schema for standard std_path
+* @returns {boolean} true if the standard is a valid instance of schema sch_path
+*/
+Gcapp.valid_ext = async function(std_path, sch_path) {
+    // TODO: it'd be nice to emit the errors found in invalid standards, but we gotta refactor load_std_ext to return em
+    // also TODO: this doesn't discern between an invalid path and an invalid schema
     try {
-        await Gcapp.load_std_ext(path, sch_path);
+        await Gcapp.load_std_ext(std_path, sch_path);
         return true;
     } catch(err) {
         return false;

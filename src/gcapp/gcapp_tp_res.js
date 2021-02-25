@@ -3,6 +3,11 @@
 // A Gcapp_tp_res object represents the result of running Gcapp.testplan_ext
 // TODO: this class is a prototype-era way to pass state around while we figure out how to model
 // test results, both completed and in-progress
+
+/**
+* A testplan results object. Note: Gcapp_tp_res is a prototype-era data structure used to pass state from {@link module:gcapp~Gcapp.testplan_ext}, but should be deprecated when Ground Control has a strategy for immutable data storage
+* @constructor
+*/
 function Gcapp_tp_res({
     map, 
     subj, 

@@ -23,7 +23,7 @@ const gctax_tent_schema = require("../gctax/schemas/gctax_tent_schema.js");
 const Validator = require("jsonschema").Validator;
 
 /**
-* Constructor
+* Gcapp exposes Ground Control's high level API
 * @constructor
 * @param {Object[]} config.data_modules - an array of data I/O modules to use TK REPLACE TYPE WITH NAMEPATH TO DATA MODULE
 */
@@ -581,10 +581,13 @@ Gcapp.valid_ext = async function(std_path, sch_path) {
     }
 }
 
-// Apply an external evaluation set against an external standard and find both resolved and unresolved links 
-// Will throw an error if the specified evaluation set is non-homogeneous
-// Returns an object wrapping two arrays: parts from the standard representing resolved links, and hashes representing any 
-// unresolved links
+/**
+* Find which elements of an external evaluation set are resolved for a given external standard
+* @static
+* @param eval_path {string} path to an evaluation set in YML format
+* @param std_path {string} path to a standard in YML format
+* @returns {Object} object.resolved contains resolved parts of the standard, object.unresolved contains unresolved hashes
+*/
 Gcapp.checkset_ext = async function(eval_path, std_path) {
     const ev = Gcapp.load_eval_set_ext(eval_path);
     const doctree = await Gcapp.load_std_ext(std_path);
@@ -621,13 +624,19 @@ Gcapp.checkset_ext = async function(eval_path, std_path) {
     };
 }
 
-// Initialize an instance of a Gcapp object - a new Gcapp object isn't ready to use until this has been executed
+
+/**
+* Initialize this instance of Gcapp. Must be executed before a new Gcapp object is ready for use
+*/
 Gcapp.prototype.init = async function() {
     Gclog.log(`[GCAPP] Initializing Ground Control kernel ${this.id}...`);
     await Promise.all(this.data_modules.map(module => module.init()));
 }
 
-// Return a list of the data modules associated with this instance of Gcapp 
+/**
+* Return a list of the data modules associated with this instance of Gacpp
+* @returns {Array} a list of data modules
+*/
 Gcapp.prototype.get_data_modules = function() {
     return this.data_modules;
 }

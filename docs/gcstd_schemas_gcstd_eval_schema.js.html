@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Global</title>
+    <title>JSDoc: Source: gcstd/schemas/gcstd_eval_schema.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,158 +17,53 @@
 
 <div id="main">
 
-    <h1 class="page-title">Global</h1>
+    <h1 class="page-title">Source: gcstd/schemas/gcstd_eval_schema.js</h1>
 
     
 
 
 
-
-<section>
-
-<header>
     
-        <h2></h2>
-        
-    
-</header>
-
-<article>
-    <div class="container-overview">
-    
-        
-
-        
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-        
-    
-    </div>
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-        <h3 class="subsection-title">Members</h3>
-
-        
-            
-<h4 class="name" id="gcstd_eval_schema"><span class="type-signature">(constant) </span>gcstd_eval_schema<span class="type-signature"></span></h4>
-
-
-
-
-<div class="description">
-    Schema for <a href="module-gcstd_eval-Gcstd_eval.html">module:gcstd_eval~Gcstd_eval</a>
-</div>
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="gcstd_schemas_gcstd_eval_schema.js.html">gcstd/schemas/gcstd_eval_schema.js</a>, <a href="gcstd_schemas_gcstd_eval_schema.js.html#line5">line 5</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-    
-
-    
-
-    
-
-    
-</article>
-
-</section>
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+* Schema for {@link module:gcstd_eval~Gcstd_eval}
+* @constant
+*/
+const gcstd_eval_schema = {
+    "id": "/gceval_schema",
+    "type": "object",
+    "properties": {
+        "eval": {
+            "required": true,
+            "type": "string"
+        },
+        "notes": {
+            "required": true,
+            "type": "string"
+        },
+        "set": {
+            "required": true,
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "hash": {
+                        "required": true,
+                        "type": "string"
+                    }
+                }
+            },
+            "minItems": 1
+        }
+    },
+    "additionalProperties": false
+};
+
+module.exports = gcstd_eval_schema;
+</code></pre>
+        </article>
+    </section>
 
 
 

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Global</title>
+    <title>JSDoc: Source: gclog/gclog.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,158 +17,78 @@
 
 <div id="main">
 
-    <h1 class="page-title">Global</h1>
+    <h1 class="page-title">Source: gclog/gclog.js</h1>
 
     
 
 
 
-
-<section>
-
-<header>
     
-        <h2></h2>
-        
-    
-</header>
-
-<article>
-    <div class="container-overview">
-    
-        
-
-        
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-        
-    
-    </div>
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-        <h3 class="subsection-title">Members</h3>
-
-        
-            
-<h4 class="name" id="gcstd_eval_schema"><span class="type-signature">(constant) </span>gcstd_eval_schema<span class="type-signature"></span></h4>
-
-
-
-
-<div class="description">
-    Schema for <a href="module-gcstd_eval-Gcstd_eval.html">module:gcstd_eval~Gcstd_eval</a>
-</div>
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="gcstd_schemas_gcstd_eval_schema.js.html">gcstd/schemas/gcstd_eval_schema.js</a>, <a href="gcstd_schemas_gcstd_eval_schema.js.html#line5">line 5</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-    
-
-    
-
-    
-
-    
-</article>
-
-</section>
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+* Logging and error messaging
+* @module gclog
+*/
+
+"use strict";
+
+/**
+* Gclog singleton
+* @constructor
+* @hideconstructor
+*/
+function Gclog() {
+
+}
+
+Gclog.LOGF = console.log;
+
+Gclog.ERRF = console.err;
+
+/**
+* Set the log function hook
+* @static
+* @param {function} f - function to execute 
+*/
+Gclog.set_log = function(f) {
+    if (typeof f !== "function") {
+        throw new TypeError("Argument f must be a function");
+    }
+
+    Gclog.LOGF = f;
+}
+
+/**
+* Set the err function hook
+* @static
+* @param {function} f - function to execute
+*/
+Gclog.set_err = function(f) {
+    // TODO: we don't have a way to run the err hook yet!
+
+    if (typeof f !== "function") {
+        throw new TypeError("Argument f must be a function");
+    }
+
+    Gclog.ERRF = f;
+}
+
+/**
+* Log a message 
+* @static
+* @param {string} msg - message to log
+* @param {boolean} startn - add a leading newline?
+* @param {boolean} endn - add a trailing newline?
+*/
+Gclog.log = function(msg, startn = false, endn = false) {
+    Gclog.LOGF(`${startn ? "\n" : ""} ${new Date().toLocaleString()} ${msg}${endn ? "\n" : ""}`);
+}
+
+module.exports = Gclog;
+</code></pre>
+        </article>
+    </section>
 
 
 

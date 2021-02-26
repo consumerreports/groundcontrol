@@ -27,6 +27,7 @@ const DEFAULT_HASH = function(data) {
 * Systemwide vector definitions.
 * You probably shouldn't fetch this directly - prefer TK LINK TO GCAPP.GET_VECTOR_NAMES
 * @memberof gcapp_config
+* @constant
 */
 const VECTORS = {
     ACCOUNT: "ACCOUNT",

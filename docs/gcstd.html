@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Global</title>
+    <title>JSDoc: Namespace: gcstd</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Global</h1>
+    <h1 class="page-title">Namespace: gcstd</h1>
 
     
 
@@ -28,7 +28,7 @@
 
 <header>
     
-        <h2></h2>
+        <h2>gcstd</h2>
         
     
 </header>
@@ -36,6 +36,8 @@
 <article>
     <div class="container-overview">
     
+        
+            <div class="description">Standards and standards-related functionality</div>
         
 
         
@@ -68,6 +70,11 @@
     
 
     
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="gcstd_gcstd.js.html">gcstd/gcstd.js</a>, <a href="gcstd_gcstd.js.html#line1">line 1</a>
+    </li></ul></dd>
+    
 
     
 
@@ -94,19 +101,83 @@
     
 
     
-        <h3 class="subsection-title">Members</h3>
+
+    
+        <h3 class="subsection-title">Methods</h3>
 
         
             
-<h4 class="name" id="gcstd_eval_schema"><span class="type-signature">(constant) </span>gcstd_eval_schema<span class="type-signature"></span></h4>
 
+    
+
+    
+    <h4 class="name" id=".get_nonscalar_keys"><span class="type-signature">(static) </span>get_nonscalar_keys<span class="signature">(val)</span><span class="type-signature"> &rarr; {Array}</span></h4>
+    
+
+    
 
 
 
 <div class="description">
-    Schema for <a href="module-gcstd_eval-Gcstd_eval.html">module:gcstd_eval~Gcstd_eval</a>
+    Get all the keys corresponding to nonscalar values in a standard (as defined by its schema).
+You probably shouldn't call this directly - prefer <a href="module-gcapp-Gcapp.html#.get_nonscalar_keys">module:gcapp~Gcapp.get_nonscalar_keys</a>
 </div>
 
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>val</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">a standard schema in jsonschema format</td>
+        </tr>
+
+    
+    </tbody>
+</table>
 
 
 
@@ -142,7 +213,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="gcstd_schemas_gcstd_eval_schema.js.html">gcstd/schemas/gcstd_eval_schema.js</a>, <a href="gcstd_schemas_gcstd_eval_schema.js.html#line5">line 5</a>
+        <a href="gcstd_gcstd.js.html">gcstd/gcstd.js</a>, <a href="gcstd_gcstd.js.html#line15">line 15</a>
     </li></ul></dd>
     
 
@@ -158,9 +229,43 @@
 
 
 
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
         
+<div class="param-desc">
+    a list of keys
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Array</span>
+
+
+    </dd>
+</dl>
+
     
 
+
+
+
+
+        
     
 
     

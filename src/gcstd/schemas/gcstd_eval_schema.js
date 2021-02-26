@@ -1,3 +1,7 @@
+/**
+* Schema for {@link module:gcstd_eval~Gcstd_eval}
+* @constant
+*/
 const gcstd_eval_schema = {
     "id": "/gceval_schema",
     "type": "object",

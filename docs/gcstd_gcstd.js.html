@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Global</title>
+    <title>JSDoc: Source: gcstd/gcstd.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,158 +17,49 @@
 
 <div id="main">
 
-    <h1 class="page-title">Global</h1>
+    <h1 class="page-title">Source: gcstd/gcstd.js</h1>
 
     
 
 
 
-
-<section>
-
-<header>
     
-        <h2></h2>
-        
-    
-</header>
-
-<article>
-    <div class="container-overview">
-    
-        
-
-        
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-        
-    
-    </div>
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-        <h3 class="subsection-title">Members</h3>
-
-        
-            
-<h4 class="name" id="gcstd_eval_schema"><span class="type-signature">(constant) </span>gcstd_eval_schema<span class="type-signature"></span></h4>
-
-
-
-
-<div class="description">
-    Schema for <a href="module-gcstd_eval-Gcstd_eval.html">module:gcstd_eval~Gcstd_eval</a>
-</div>
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="gcstd_schemas_gcstd_eval_schema.js.html">gcstd/schemas/gcstd_eval_schema.js</a>, <a href="gcstd_schemas_gcstd_eval_schema.js.html#line5">line 5</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-    
-
-    
-
-    
-
-    
-</article>
-
-</section>
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/** 
+* Standards and standards-related functionality
+* @namespace gcstd
+*/
+
+"use strict";
+
+/**
+* Get all the keys corresponding to nonscalar values in a standard (as defined by its schema).
+* You probably shouldn't call this directly - prefer {@link module:gcapp~Gcapp.get_nonscalar_keys}
+* @param {Object} val - a standard schema in jsonschema format
+* @returns {Array} a list of keys
+* @memberof gcstd
+*/
+function get_nonscalar_keys(val, key = null, data = []) {
+    const objkeys = Object.keys(val);
+
+    objkeys.forEach((objkey) => {
+        if (typeof val[objkey] === "object") {
+            data = get_nonscalar_keys(val[objkey], objkey, data);
+        }
+
+        if (objkey === "type" &amp;&amp; val.type === "array") {
+            data.push(key);
+        }
+    });
+
+    return data;
+}
+
+module.exports.get_nonscalar_keys = get_nonscalar_keys;
+</code></pre>
+        </article>
+    </section>
 
 
 

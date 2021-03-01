@@ -1,14 +1,28 @@
+/**
+* Products and product taxonomies
+* @namespace gctax
+*/
+
 "use strict";
 
 const gc = require("../gcapp/gcapp_config.js");
 
-// You probably shouldn't call this directly - prefer the Gcapp convenience wrapper
+/**
+* Fetch the vocabulary of vector names known to this version of Ground Control.
+* You probably shouldn't call this directly - prefer {@link module:gcapp~Gcapp.get_vector_names}
+* @returns {Array} a list of vector names
+* @memberof gctax
+*/
 function get_vector_names() {
     return Object.keys(gc.VECTORS);
 }
 
-// You probably shouldn't call this directly - prefer the Gcapp convenience wrapper
-// Get the intersection of the sets of vectors for list of Gctent objects 'tents' 
+/**
+* Compute the intersection of sets of vectors over an array of testable entities.
+* You probably shouldn't call this directly - prefer {@link module:gcapp~Gcapp.get_common_vecs}
+* @returns {Array} an array representing the set of common vectors
+* @memberof gctax
+*/
 function get_common_vecs(tents) {
     const vectors = new Map();
 

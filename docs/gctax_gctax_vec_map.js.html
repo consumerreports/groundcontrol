@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: gcdata/store/gcstore_base.js</title>
+    <title>JSDoc: Source: gctax/gctax_vec_map.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: gcdata/store/gcstore_base.js</h1>
+    <h1 class="page-title">Source: gctax/gctax_vec_map.js</h1>
 
     
 
@@ -26,52 +26,66 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>"use strict";
+            <pre class="prettyprint source linenums"><code>/**
+* Vector maps
+* @module gctax_vec_map
+*/
+
+"use strict";
+
+const Validator = require("jsonschema").Validator;
+const v = new Validator();
+const gctax = require("./gctax.js");
+const gctax_vec_map_schema = require("./schemas/gctax_vec_map_schema.js");
 
 /**
-* Base class for a data store
+* A vector map
 * @constructor
+* @param {Object} config
+* @param {string} config.name - name for the vector map
 */
-function Gcstore({} = {}) {
-    this.type = "BASE";
+function Gctax_vec_map({name = ""} = {}) {
+    this.name = name;
+    this.data = new Map(gctax.get_vector_names().map(name => [name, []]));
 }
 
 /**
-* Initialize this data store. Will be executed during {@link module:gcapp~Gcapp#init} 
-* @abstract
+* Validate the structure of a vector map. 
+* Note that this does not validate vector names against the system vocabulary
+* @static
+* @param {module:gctax_vec_map~Gctax_vec_map} vec_map - a vector map
+* @returns {boolean} true if the vector map is valid
 */
-Gcstore.prototype.init = async function() {
-    // Do nothing
+Gctax_vec_map.is_valid = function(vec_map) {
+    const res = v.validate(vec_map, gctax_vec_map_schema);
+    return res.errors.length > 0 ? false : true;
 }
 
 /**
-* Shut down this data store
-* @abstract
+* Add a new link to this vector map
+* @param {string} vec_name - the vector to assign to
+* @param {any} data - the data to assign as a link; it should probably be a hash as a string, but that isn't enforced!
 */
-Gcstore.prototype.shutdown = function() {
-    // Do nothing
+Gctax_vec_map.prototype.add_link = function(vec_name, data) {
+    const list = this.data.get(vec_name);
+
+    if (!list) {
+        throw new Error(`Vector name ${vec_name} not found!`);
+    }
+
+    list.push(data);
 }
 
 /**
-* Save data to this data store
-* @abstract
-* @param key {string} key, usage is subclass dependent
-* @param val {Any} value to save
+* Get all the links associated with a vector in this vector map
+* @param {string} vec_name - the vector to fetch links for
+* @returns {Array} an array of data associated with vector vec_name
 */
-Gcstore.prototype.put = function(key, val) {
-    throw new Error("Subclasses must implement 'put'");    
+Gctax_vec_map.prototype.get_links = function(vec_name) {
+    return this.data.get(vec_name);
 }
 
-/**
-* Fetch data from this data store
-* @abstract
-* @param key {string} key, usage is subclass dependent
-*/
-Gcstore.prototype.get = function(key) {
-    throw new Error("Subclasses must implement 'get'");
-}
-
-module.exports = Gcstore;
+module.exports = Gctax_vec_map;
 </code></pre>
         </article>
     </section>

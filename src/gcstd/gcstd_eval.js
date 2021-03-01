@@ -30,7 +30,7 @@ function Gcstd_eval({name} = {}) {
 * @param {Object} config.std - a standard as a Gcntree
 * @param {Array} config.nums - absolute node numbers
 * @param {string} config.name - name for the evaluation set
-* @returns {Gcstd_eval}
+* @returns {module:gcstd_eval~Gcstd_eval}
 */
 Gcstd_eval.from_nodes = function({std = null, nums = [], name = ""} = {}) {
     // TODO: we probably shouldn't let you derive a Gceval from an incorrect standard...
@@ -68,7 +68,7 @@ Gcstd_eval.from_nodes = function({std = null, nums = [], name = ""} = {}) {
 /**
 * Validate the structure of an evaluation set
 * @static
-* @param {Gcstd_eval} es - an evaluation set
+* @param {module:gcstd_eval~Gcstd_eval} es - an evaluation set
 * @returns {boolean} true if the evaluation set is valid
 */
 Gcstd_eval.is_valid = function(es) {

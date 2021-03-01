@@ -1,3 +1,7 @@
+/**
+* Schema for {@link module:gctax_group~Gctax_group}
+* @constant
+*/
 const gctax_group_schema = {
     "id": "/gcgroup_schema",
     "type": "object",

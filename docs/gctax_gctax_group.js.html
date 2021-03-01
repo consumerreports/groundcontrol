@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: gcdata/store/gcstore_base.js</title>
+    <title>JSDoc: Source: gctax/gctax_group.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: gcdata/store/gcstore_base.js</h1>
+    <h1 class="page-title">Source: gctax/gctax_group.js</h1>
 
     
 
@@ -26,52 +26,44 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>"use strict";
+            <pre class="prettyprint source linenums"><code>/**
+* Groups
+* @module gctax_group
+*/
+
+"use strict";
+
+const Validator = require("jsonschema").Validator;
+const v = new Validator();
+const gctax = require("./gctax.js");
+const gctax_group_schema = require("./schemas/gctax_group_schema.js");
 
 /**
-* Base class for a data store
+* A group of testable entities
 * @constructor
+* @param {Object} config - configuration
+* @param {string} config.name - name for the group
+* @param {string} config.notes - notes associated with the group
+* @param {Array} config.tents - an array of TK LINK TO GCTAX_TENT OBJECTS
 */
-function Gcstore({} = {}) {
-    this.type = "BASE";
+function Gctax_group({name, notes, tents = []} = {}) {
+    this.name = name;
+    this.notes = notes;
+    this.tents = tents;
 }
 
 /**
-* Initialize this data store. Will be executed during {@link module:gcapp~Gcapp#init} 
-* @abstract
+* Validate the structure of a group
+* @static
+* @param {module:gctax_group~Gctax_group} group - a group
+* @returns {boolean} true if the group is valid
 */
-Gcstore.prototype.init = async function() {
-    // Do nothing
+Gctax_group.is_valid = function(group) {
+    const res = v.validate(group, gctax_group_schema);
+    return res.errors.length > 0 ? false : true;
 }
 
-/**
-* Shut down this data store
-* @abstract
-*/
-Gcstore.prototype.shutdown = function() {
-    // Do nothing
-}
-
-/**
-* Save data to this data store
-* @abstract
-* @param key {string} key, usage is subclass dependent
-* @param val {Any} value to save
-*/
-Gcstore.prototype.put = function(key, val) {
-    throw new Error("Subclasses must implement 'put'");    
-}
-
-/**
-* Fetch data from this data store
-* @abstract
-* @param key {string} key, usage is subclass dependent
-*/
-Gcstore.prototype.get = function(key) {
-    throw new Error("Subclasses must implement 'get'");
-}
-
-module.exports = Gcstore;
+module.exports = Gctax_group;
 </code></pre>
         </article>
     </section>

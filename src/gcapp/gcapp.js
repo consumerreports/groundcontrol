@@ -66,7 +66,7 @@ Gcapp.get_vector_names = function() {
 * Compute the intersection of sets of vectors over an array of testable entities
 * @static
 * @param {Object[]} tent_list - an array of Gctax_tent objects
-* @returns {Array} an array representing a set of common vectors
+* @returns {Array} an array representing the set of common vectors
 */
 Gcapp.get_common_vecs = function(tent_list) {
     return gctax.get_common_vecs(tent_list);

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: gcdata/store/gcstore_base.js</title>
+    <title>JSDoc: Source: gctax/gctax.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: gcdata/store/gcstore_base.js</h1>
+    <h1 class="page-title">Source: gctax/gctax.js</h1>
 
     
 
@@ -26,52 +26,46 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>"use strict";
+            <pre class="prettyprint source linenums"><code>/**
+* Products and product taxonomies
+* @namespace gctax
+*/
+
+"use strict";
+
+const gc = require("../gcapp/gcapp_config.js");
 
 /**
-* Base class for a data store
-* @constructor
+* Fetch the vocabulary of vector names known to this version of Ground Control.
+* You probably shouldn't call this directly - prefer {@link module:gcapp~Gcapp.get_vector_names}
+* @returns {Array} a list of vector names
+* @memberof gctax
 */
-function Gcstore({} = {}) {
-    this.type = "BASE";
+function get_vector_names() {
+    return Object.keys(gc.VECTORS);
 }
 
 /**
-* Initialize this data store. Will be executed during {@link module:gcapp~Gcapp#init} 
-* @abstract
+* Compute the intersection of sets of vectors over an array of testable entities.
+* You probably shouldn't call this directly - prefer {@link module:gcapp~Gcapp.get_common_vecs}
+* @returns {Array} an array representing the set of common vectors
+* @memberof gctax
 */
-Gcstore.prototype.init = async function() {
-    // Do nothing
+function get_common_vecs(tents) {
+    const vectors = new Map();
+
+    tents.forEach((tent, i) => {
+        tent.vecs.forEach((vec) => {
+            const qty = vectors.get(vec);
+            vectors.set(vec, (qty === undefined ? 0 : qty) + 1);
+        });
+    });
+    
+    return Array.from(vectors.entries()).filter(keyval => keyval[1] === tents.length).map(keyval => keyval[0]);
 }
 
-/**
-* Shut down this data store
-* @abstract
-*/
-Gcstore.prototype.shutdown = function() {
-    // Do nothing
-}
-
-/**
-* Save data to this data store
-* @abstract
-* @param key {string} key, usage is subclass dependent
-* @param val {Any} value to save
-*/
-Gcstore.prototype.put = function(key, val) {
-    throw new Error("Subclasses must implement 'put'");    
-}
-
-/**
-* Fetch data from this data store
-* @abstract
-* @param key {string} key, usage is subclass dependent
-*/
-Gcstore.prototype.get = function(key) {
-    throw new Error("Subclasses must implement 'get'");
-}
-
-module.exports = Gcstore;
+module.exports.get_vector_names = get_vector_names;
+module.exports.get_common_vecs = get_common_vecs;
 </code></pre>
         </article>
     </section>

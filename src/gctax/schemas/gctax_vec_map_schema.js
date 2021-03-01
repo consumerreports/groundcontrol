@@ -1,3 +1,7 @@
+/**
+* Schema for {@link module:gctax_vec_map~Gctax_vec_map}
+* @constant
+*/
 const gctax_vec_map_schema = {
     "id": "/gcvec_map_schema",
     "type": "object",

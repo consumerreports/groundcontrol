@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: gcdata/store/gcstore_base.js</title>
+    <title>JSDoc: Source: gctax/schemas/gctax_tent_schema.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: gcdata/store/gcstore_base.js</h1>
+    <h1 class="page-title">Source: gctax/schemas/gctax_tent_schema.js</h1>
 
     
 
@@ -26,52 +26,41 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>"use strict";
-
-/**
-* Base class for a data store
-* @constructor
+            <pre class="prettyprint source linenums"><code>/**
+* Schema for {@link module:gctax_tent~Gctax_tent}
+* @constant
 */
-function Gcstore({} = {}) {
-    this.type = "BASE";
-}
+const gctax_tent_schema = {
+    "id": "/gctent_schema",
+    "type": "object",
+    "properties": {
+        "tent": {
+            "required": true,
+            "type": "string"
+        },
+        "notes": {
+            "required": true,
+            "type": "string"
+        },
+        "vecs": {
+            "required": true,
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "vec": {
+                        "required": true,
+                        "type": "string"
+                    }
+                }
+            },
+            "minItems": 1
+        }
+    },
+    "additionalProperties": false
+};
 
-/**
-* Initialize this data store. Will be executed during {@link module:gcapp~Gcapp#init} 
-* @abstract
-*/
-Gcstore.prototype.init = async function() {
-    // Do nothing
-}
-
-/**
-* Shut down this data store
-* @abstract
-*/
-Gcstore.prototype.shutdown = function() {
-    // Do nothing
-}
-
-/**
-* Save data to this data store
-* @abstract
-* @param key {string} key, usage is subclass dependent
-* @param val {Any} value to save
-*/
-Gcstore.prototype.put = function(key, val) {
-    throw new Error("Subclasses must implement 'put'");    
-}
-
-/**
-* Fetch data from this data store
-* @abstract
-* @param key {string} key, usage is subclass dependent
-*/
-Gcstore.prototype.get = function(key) {
-    throw new Error("Subclasses must implement 'get'");
-}
-
-module.exports = Gcstore;
+module.exports = gctax_tent_schema;
 </code></pre>
         </article>
     </section>

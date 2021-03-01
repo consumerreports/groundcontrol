@@ -1,3 +1,7 @@
+/**
+* Schema for {@link module:gctax_tent~Gctax_tent}
+* @constant
+*/
 const gctax_tent_schema = {
     "id": "/gctent_schema",
     "type": "object",

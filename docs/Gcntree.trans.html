@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Namespace: gcapp_config</title>
+    <title>JSDoc: Namespace: trans</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Namespace: gcapp_config</h1>
+    <h1 class="page-title">Namespace: trans</h1>
 
     
 
@@ -28,7 +28,8 @@
 
 <header>
     
-        <h2>gcapp_config</h2>
+        <h2>
+            <span class="ancestors"><a href="Gcntree.html">Gcntree</a>.</span>trans</h2>
         
     
 </header>
@@ -37,7 +38,9 @@
     <div class="container-overview">
     
         
-            <div class="description">Global configuration</div>
+            <div class="description">Transformer functions for <a href="Gcntree.html#.from_json_doc">Gcntree.from_json_doc</a>. 
+A transformer function describes how to transform a (key, value) pair 
+in a JSON object to data in a <a href="Gcntree_node.html">Gcntree_node</a></div>
         
 
         
@@ -72,7 +75,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="gcapp_gcapp_config.js.html">gcapp/gcapp_config.js</a>, <a href="gcapp_gcapp_config.js.html#line1">line 1</a>
+        <a href="gctypes_gcntree_gcntree.js.html">gctypes/gcntree/gcntree.js</a>, <a href="gctypes_gcntree_gcntree.js.html#line47">line 47</a>
     </li></ul></dd>
     
 
@@ -101,73 +104,6 @@
     
 
     
-        <h3 class="subsection-title">Members</h3>
-
-        
-            
-<h4 class="name" id=".VECTORS"><span class="type-signature">(static, constant) </span>VECTORS<span class="type-signature"></span></h4>
-
-
-
-
-<div class="description">
-    Systemwide vector definitions.
-You probably shouldn't fetch this directly - prefer TK LINK TO GCAPP.GET_VECTOR_NAMES
-</div>
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="gcapp_gcapp_config.js.html">gcapp/gcapp_config.js</a>, <a href="gcapp_gcapp_config.js.html#line32">line 32</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-    
 
     
         <h3 class="subsection-title">Methods</h3>
@@ -178,7 +114,7 @@ You probably shouldn't fetch this directly - prefer TK LINK TO GCAPP.GET_VECTOR_
     
 
     
-    <h4 class="name" id=".DEFAULT_HASH"><span class="type-signature">(static) </span>DEFAULT_HASH<span class="signature">(data)</span><span class="type-signature"> &rarr; {string}</span></h4>
+    <h4 class="name" id=".to_obj"><span class="type-signature">(static) </span>to_obj<span class="signature">(key, val)</span><span class="type-signature"> &rarr; {Object}</span></h4>
     
 
     
@@ -186,8 +122,7 @@ You probably shouldn't fetch this directly - prefer TK LINK TO GCAPP.GET_VECTOR_
 
 
 <div class="description">
-    Systemwide default hash function.
-You probably shouldn't call this directly - prefer TK LINK TO GCAPP.DHASH
+    Transform to simple object
 </div>
 
 
@@ -223,7 +158,30 @@ You probably shouldn't call this directly - prefer TK LINK TO GCAPP.DHASH
 
         <tr>
             
-                <td class="name"><code>data</code></td>
+                <td class="name"><code>key</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">key</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>val</code></td>
             
 
             <td class="type">
@@ -239,7 +197,7 @@ You probably shouldn't call this directly - prefer TK LINK TO GCAPP.DHASH
 
             
 
-            <td class="description last">the value to hash</td>
+            <td class="description last">value</td>
         </tr>
 
     
@@ -280,7 +238,7 @@ You probably shouldn't call this directly - prefer TK LINK TO GCAPP.DHASH
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="gcapp_gcapp_config.js.html">gcapp/gcapp_config.js</a>, <a href="gcapp_gcapp_config.js.html#line10">line 10</a>
+        <a href="gctypes_gcntree_gcntree.js.html">gctypes/gcntree/gcntree.js</a>, <a href="gctypes_gcntree_gcntree.js.html#line61">line 61</a>
     </li></ul></dd>
     
 
@@ -308,6 +266,10 @@ You probably shouldn't call this directly - prefer TK LINK TO GCAPP.DHASH
 <h5>Returns:</h5>
 
         
+<div class="param-desc">
+    as {key: val}
+</div>
+
 
 
 <dl>
@@ -316,7 +278,7 @@ You probably shouldn't call this directly - prefer TK LINK TO GCAPP.DHASH
     </dt>
     <dd>
         
-<span class="param-type">string</span>
+<span class="param-type">Object</span>
 
 
     </dd>

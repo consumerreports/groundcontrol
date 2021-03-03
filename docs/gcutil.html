@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: Gctax_tent</title>
+    <title>JSDoc: Namespace: gcutil</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: Gctax_tent</h1>
+    <h1 class="page-title">Namespace: gcutil</h1>
 
     
 
@@ -28,8 +28,7 @@
 
 <header>
     
-        <h2><span class="attribs"><span class="type-signature"></span></span>
-            <span class="ancestors"><a href="module-gctax_tent.html">gctax_tent</a>~</span>Gctax_tent<span class="signature">(config)</span><span class="type-signature"></span></h2>
+        <h2>gcutil</h2>
         
     
 </header>
@@ -38,175 +37,10 @@
     <div class="container-overview">
     
         
-
-    
-
-    
-    <h4 class="name" id="Gctax_tent"><span class="type-signature"></span>new Gctax_tent<span class="signature">(config)</span><span class="type-signature"></span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    A testable entity
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
+            <div class="description">Utility functions</div>
         
 
         
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>config</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">configuration
-                <h6>Properties</h6>
-                
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>name</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">name for the testable entity</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>notes</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">notes to associate with the testable entity</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>vecs</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Array</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">an array of vector names</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-            </td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
 
 
 <dl class="details">
@@ -238,7 +72,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="gctax_gctax_tent.js.html">gctax/gctax_tent.js</a>, <a href="gctax_gctax_tent.js.html#line21">line 21</a>
+        <a href="gcutil_gcutil.js.html">gcutil/gcutil.js</a>, <a href="gcutil_gcutil.js.html#line1">line 1</a>
     </li></ul></dd>
     
 
@@ -250,24 +84,7 @@
 </dl>
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        
     
     </div>
 
@@ -294,7 +111,7 @@
     
 
     
-    <h4 class="name" id=".get_unknown_vecs"><span class="type-signature">(static) </span>get_unknown_vecs<span class="signature">(tent)</span><span class="type-signature"> &rarr; {Array}</span></h4>
+    <h4 class="name" id=".inspect"><span class="type-signature">(static) </span>inspect<span class="signature">(obj, depth<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {string}</span></h4>
     
 
     
@@ -302,7 +119,7 @@
 
 
 <div class="description">
-    Fetch the set of vectors associated with a testable entity that are unknown to this version of Ground Control
+    Deep inspect an object
 </div>
 
 
@@ -326,7 +143,11 @@
         <th>Type</th>
 
         
+        <th>Attributes</th>
+        
 
+        
+        <th>Default</th>
         
 
         <th class="last">Description</th>
@@ -338,23 +159,74 @@
 
         <tr>
             
-                <td class="name"><code>tent</code></td>
+                <td class="name"><code>obj</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><a href="module-gctax_tent-Gctax_tent.html">module:gctax_tent~Gctax_tent</a></span>
+<span class="param-type">Object</span>
 
 
             
             </td>
 
             
+                <td class="attributes">
+                
 
+                
+
+                
+                </td>
             
 
-            <td class="description last">a testable entity</td>
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">the object to inspect</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>depth</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    20
+                
+                </td>
+            
+
+            <td class="description last">recursion depth</td>
         </tr>
 
     
@@ -395,7 +267,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="gctax_gctax_tent.js.html">gctax/gctax_tent.js</a>, <a href="gctax_gctax_tent.js.html#line44">line 44</a>
+        <a href="gcutil_gcutil.js.html">gcutil/gcutil.js</a>, <a href="gcutil_gcutil.js.html#line32">line 32</a>
     </li></ul></dd>
     
 
@@ -423,10 +295,6 @@
 <h5>Returns:</h5>
 
         
-<div class="param-desc">
-    - an array of vector names
-</div>
-
 
 
 <dl>
@@ -435,7 +303,7 @@
     </dt>
     <dd>
         
-<span class="param-type">Array</span>
+<span class="param-type">string</span>
 
 
     </dd>
@@ -453,7 +321,7 @@
     
 
     
-    <h4 class="name" id=".is_valid"><span class="type-signature">(static) </span>is_valid<span class="signature">(tent)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
+    <h4 class="name" id=".sha256"><span class="type-signature">(static) </span>sha256<span class="signature">(data)</span><span class="type-signature"> &rarr; {string}</span></h4>
     
 
     
@@ -461,7 +329,7 @@
 
 
 <div class="description">
-    Validate the structure of a testable entity
+    Compute the SHA256 hash of some data
 </div>
 
 
@@ -497,13 +365,13 @@
 
         <tr>
             
-                <td class="name"><code>tent</code></td>
+                <td class="name"><code>data</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><a href="module-gctax_tent-Gctax_tent.html">module:gctax_tent~Gctax_tent</a></span>
+<span class="param-type">string</span>
 
 
             
@@ -513,7 +381,7 @@
 
             
 
-            <td class="description last">a testable entity</td>
+            <td class="description last">the data to hash</td>
         </tr>
 
     
@@ -554,7 +422,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="gctax_gctax_tent.js.html">gctax/gctax_tent.js</a>, <a href="gctax_gctax_tent.js.html#line33">line 33</a>
+        <a href="gcutil_gcutil.js.html">gcutil/gcutil.js</a>, <a href="gcutil_gcutil.js.html#line17">line 17</a>
     </li></ul></dd>
     
 
@@ -582,10 +450,6 @@
 <h5>Returns:</h5>
 
         
-<div class="param-desc">
-    true if the testable entity is valid
-</div>
-
 
 
 <dl>
@@ -594,7 +458,7 @@
     </dt>
     <dd>
         
-<span class="param-type">boolean</span>
+<span class="param-type">string</span>
 
 
     </dd>

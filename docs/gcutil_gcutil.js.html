@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: gctypes/gcntree/gcntree_node.js</title>
+    <title>JSDoc: Source: gcutil/gcutil.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: gctypes/gcntree/gcntree_node.js</h1>
+    <h1 class="page-title">Source: gcutil/gcutil.js</h1>
 
     
 
@@ -26,58 +26,43 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>"use strict";
+            <pre class="prettyprint source linenums"><code>/**
+* Utility functions
+* @namespace gcutil
+*/
+
+"use strict";
+
+const crypto = require("crypto");
+const util = require("util");
 
 /**
-* A {@link Gcntree} node
-* @constructor
-* @param {Object} config - configuration
-* @param {any} config.data - the data to associate with this node
-* @param {Gcntree_node} config.parent - node to assign as this node's parent
-* @param {Array.&lt;Gcntree_node>} config.children - nodes to assign as this node's children
+* Compute the SHA256 hash of some data
+* @memberof gcutil
+* @param {string} data - the data to hash
+* @returns {string}
 */
-function Gcntree_node({data = null, parent = null, children = []} = {}) {
-    this.data = data;
-    this.parent = parent;
-    this.children = children;
+function sha256(data) {
+    // TODO: this assumes that the host's OpenSSL implementation includes SHA256
+    // if weird/bad things are happening, check 'openssl list -digest-algorithms'
+    const hash = crypto.createHash("SHA256");
+    hash.update(data);
+    return hash.digest("hex");
 }
 
 /**
-* Add a child to this node
-* @param {Gcntree_node} node - node to add as a child
-* @returns {Gcntree_node} the new child node
+* Deep inspect an object
+* @memberof gcutil
+* @param {Object} obj - the object to inspect
+* @param {number} [depth=20] - recursion depth
+* @returns {string}
 */
-Gcntree_node.prototype.add_child = function(node) {
-    this.children.push(node);
-    return node;
+function inspect(obj, depth = 20) {
+    return util.inspect(obj, {showHidden: false, depth: depth, colors: true, compact: 40, breakLength: 200});
 }
 
-/**
-* Delete a child from this node
-* @param {Gcntree_node} node - the node to delete
-* @returns {Gcntree_node} the deleted node
-*/
-Gcntree_node.prototype.delete_child = function(node) {
-    return this.children.splice(this.children.indexOf(node), 1)[0];
-}
-
-/**
-* Fetch all of this node's children
-* @returns {Array.&lt;Gcntree_node>} 
-*/
-Gcntree_node.prototype.get_all_children = function() {
-    return [...this.children];
-}
-
-/**
-* Compute the degree of this node
-* @returns {number}
-*/
-Gcntree_node.prototype.degree = function() {
-    return this.children.length;
-}
-
-module.exports = Gcntree_node;
+module.exports.sha256 = sha256;
+module.exports.inspect = inspect;
 </code></pre>
         </article>
     </section>

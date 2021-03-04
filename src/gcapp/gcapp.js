@@ -25,7 +25,8 @@ const Validator = require("jsonschema").Validator;
 /**
 * Gcapp exposes Ground Control's high level API
 * @constructor
-* @param {Object[]} config.data_modules - an array of data I/O modules to use TK REPLACE TYPE WITH NAMEPATH TO DATA MODULE
+* @param {Object} config - configuration
+* @param {Array.<Gcstore>} config.data_modules - an array of data I/O modules to use
 */
 function Gcapp({data_modules = []} = {}) {
     this.data_modules = data_modules;
@@ -47,7 +48,7 @@ Gcapp.dhash = function(data) {
 * Return a list of keys corresponding to the nonscalar values in a standard
 * @static
 * @param {Object} sch - a standard schema in jsonschema format
-* @returns {Array}
+* @returns {Array.<string>}
 */
 Gcapp.get_nonscalar_keys = function(sch) {
     return gcstd.get_nonscalar_keys(sch);
@@ -56,7 +57,7 @@ Gcapp.get_nonscalar_keys = function(sch) {
 /**
 * Fetch the systemwide vocabulary of vector names
 * @static
-* @returns {Array}
+* @returns {Array.<string>}
 */
 Gcapp.get_vector_names = function() {
     return gctax.get_vector_names();
@@ -65,17 +66,17 @@ Gcapp.get_vector_names = function() {
 /**
 * Compute the intersection of sets of vectors over an array of testable entities
 * @static
-* @param {Object[]} tent_list - an array of Gctax_tent objects
-* @returns {Array} an array representing the set of common vectors
+* @param {Array.<module:gctax_tent~Gctax_tent>} tent_list - the testable entities to compute over
+* @returns {Array.<string>} an array representing the set of common vectors
 */
 Gcapp.get_common_vecs = function(tent_list) {
     return gctax.get_common_vecs(tent_list);
 }
 
 /**
-* Compute the hash of node n in a standard using the default hash function
+* Compute the hash of a node in a standard specified by absolute node number using the default hash function
 * @static
-* @param {Object} std - a Gcntree representing a standard
+* @param {Gcntree} std - a standard
 * @param {number} n - node number
 * @returns {string}
 */
@@ -94,9 +95,9 @@ Gcapp.get_node_hash = function(std, n) {
 /**
 * Search the nodes of a standard for a text string, case sensitive
 * @static
-* @param {Object} std - a Gcntree representing a standard
+* @param {Gcntree} std - a standard
 * @param {string} str - text string to search for
-* @returns {Array} nodes where the string was found, as [number, text]
+* @returns {Array.<Array>} nodes where the string was found, as [node number, node data]
 */
 Gcapp.text_search_nodes = function(std, str) {
     let n = 0;
@@ -115,9 +116,9 @@ Gcapp.text_search_nodes = function(std, str) {
 /**
 * Compute the asymmetric difference between Gcntree A and Gcntree B
 * @static
-* @param {Object} a - Gcntree A
-* @param {Object} b - Gcntree B
-* @returns {Array} 
+* @param {Gcntree} a - Gcntree A
+* @param {Gcntree} b - Gcntree B
+* @returns {Array} set of node data representing the asymmetric difference
 */
 Gcapp.asymdif = function(a, b) {
     // TODO: this is O(a * b), right? and it's always worst case bc we don't terminate DFS early
@@ -143,11 +144,11 @@ Gcapp.asymdif = function(a, b) {
 /**
 * Create a vector map from a standard
 * @static
-* @param std {Object} - the standard to derive mappings from
-* @param nums {Array} - a 2D array of absolute node numbers, where the array at nums[i] corresponds to the ith 
-* vector name returned by Gcapp.get_vector_names
-* @param name {string=} - name for the vector map
-* @returns {Object} TK REPLACE WITH Gctax_vec_map TYPE
+* @param {Gcntree} std - the standard to derive mappings from
+* @param {Array.<Array>} nums - a 2D array of absolute node numbers, where the array at nums[i] corresponds to the ith 
+* vector name returned by {@link module:gcapp~Gcapp.get_vector_names}
+* @param {string=} name - name for the vector map
+* @returns {module:gctax_vec_map~Gctax_vec_map}
 */
 Gcapp.make_vec_map = function(std, nums = [], name = "") {
     const vecs = Gcapp.get_vector_names();
@@ -169,8 +170,8 @@ Gcapp.make_vec_map = function(std, nums = [], name = "") {
 /**
 * Write a vector map to disk in YML format
 * @static
-* @param vec_map {Object} - a Gctax_vec_map object
-* @param notes {str} - data for the notes field
+* @param {module:gctax_vec_map~Gctax_vec_map} vec_map - the vector map to write
+* @param {string} notes - data for the notes field
 * @returns {string} output path
 */
 Gcapp.write_vec_map_ext = function(vec_map, notes = "") {
@@ -195,8 +196,8 @@ Gcapp.write_vec_map_ext = function(vec_map, notes = "") {
 /**
 * Load a vector map from a YML file
 * @static
-* @param path {string} path to a vector map in YML format
-* @returns {Object} TK REPLACE WITH Gctax_vec_map TYPE
+* @param {string} path - path to a vector map in YML format
+* @returns {module:gctax_vec_map~Gctax_vec_map}
 */
 Gcapp.load_vec_map_ext = function(path) {
     // TODO: what happens if errors?
@@ -225,10 +226,10 @@ Gcapp.load_vec_map_ext = function(path) {
 /**
 * Create an evaluation set from a standard
 * @static
-* @param std {Object} - the standard to derive evaluations from
-* @param nums {Array} - an array of absolute node numbers
-* @param name {string=} - name for the evaluation set
-* @returns {Object} TK REPLACE WITH Gcstd_eval TYPE 
+* @param {Gcntree} std - the standard to derive evaluations from
+* @param {Array.<number>} nums - nodes to include, as absolute node numbers
+* @param {string=} name - name for the evaluation set
+* @returns {module:gcstd_eval~Gcstd_eval}
 */
 Gcapp.make_eval_set = function(std, nums = [], name = "") {
     if (nums.length === 0) {
@@ -241,8 +242,8 @@ Gcapp.make_eval_set = function(std, nums = [], name = "") {
 /**
 * Write an evaluation set to disk in YML format
 * @static
-* @param es {Object} - a Gcstd_eval object
-* @param notes {str} - data for the notes field
+* @param {module:gcstd_eval~Gcstd_eval} es - the evaluation set to write
+* @param {string} notes - data for the notes field
 * @returns {string} output path
 */
 Gcapp.write_eval_set_ext = function(es, notes = "") {
@@ -262,8 +263,8 @@ Gcapp.write_eval_set_ext = function(es, notes = "") {
 /**
 * Load an evaluation set from a YML file
 * @static
-* @param path {string} path to an evaluation set in YML format
-* @returns {Object} TK REPLACE WITH Gcstd_eval TYPE
+* @param {string} path - path to an evaluation set in YML format
+* @returns {module:gcstd_eval~Gcstd_eval}
 */
 Gcapp.load_eval_set_ext = function(path) {
     // TODO: what happens if errors?
@@ -284,8 +285,8 @@ Gcapp.load_eval_set_ext = function(path) {
 /** 
 * Load a testable entity from a YML file
 * @static
-* @param path {string} path to a testable entity in YML format
-* @returns {Object} TK REPLACE WITH Gctax_tent TYPE
+* @param {string} path - path to a testable entity in YML format
+* @returns {module:gctax_tent~Gctax_tent}
 */
 Gcapp.load_tent_ext = function(path) {
     // TODO: what happens if errors happen during file I/O or deserialization?
@@ -308,8 +309,8 @@ Gcapp.load_tent_ext = function(path) {
 /**
 * Load a group from a YML file
 * @static
-* @param path {string} path to a group in YML format (assumes relative pathnames)
-* @returns {Object} TK REPLACE WITH Gctax_group TYPE
+* @param {string} path - path to a group in YML format (assumes relative pathnames)
+* @returns {module:gctax_group~Gctax_group}
 */
 Gcapp.load_group_ext = function(path) {
     // TODO: what happens if errors happen during file I/O or deserialization?
@@ -330,9 +331,9 @@ Gcapp.load_group_ext = function(path) {
 /**
 * Load a standard from a YML file
 * @static
-* @param std_path {string} path to a standard in YML format
-* @param schema_path {string=} path to a standard schema for validation (if the schema module exports multiple objects, the 0th is consdered the parent and the following are registered as children)
-* @returns {Object} TK REPLACE WITH Gcntree TYPE
+* @param {string} std_path - path to a standard in YML format
+* @param {string=} schema_path - path to a standard schema for validation (if the schema module exports multiple objects, the 0th is consdered the parent and the following are registered as children)
+* @returns {Gcntree}
 */
 Gcapp.load_std_ext = async function(std_path, schema_path = null) {
     // TODO: what happens if errors?
@@ -363,7 +364,7 @@ Gcapp.load_std_ext = async function(std_path, schema_path = null) {
 /**
 * Load a standard schema (in jsonschema format) from disk
 * @static
-* @param path {string} path to an importable JavaScript module
+* @param {string} path - path to an importable JavaScript module
 * @returns {Object} a jsonschema object
 */
 Gcapp.load_schema_ext = async function(path) {
@@ -374,11 +375,11 @@ Gcapp.load_schema_ext = async function(path) {
 /**
 * Generate a testplan from YML files
 * @static
-* @param subj_path {string} path to a testable entity OR group in YML format
-* @param std_path {string} path to a standard in YML format
-* @param vec_map_path {string} path to a vector map in YML format
-* @param eval_path {string} path to an evaluation set in YML format
-* @returns {Object} TK REPLACE WITH Gcapp_tp_res TYPE
+* @param {string} sub_path - path to a testable entity OR group in YML format
+* @param {string} std_path - path to a standard in YML format
+* @param {string} vec_map_path - path to a vector map in YML format
+* @param {string} eval_path - path to an evaluation set in YML format
+* @returns {Gcapp_tp_res}
 */
 Gcapp.testplan_ext = function(subj_path, std_path, vec_map_path, eval_path) {
     if (!subj_path || !std_path || !vec_map_path) {
@@ -484,10 +485,10 @@ Gcapp.testplan_ext = function(subj_path, std_path, vec_map_path, eval_path) {
 * To get part IDs for a standard, see {@link module:gcapp~Gcapp.get_nonscalar_keys}
 * @static
 * @see module:gcapp~Gcapp.get_nonscalar_keys
-* @param std_path {string} path to a standard in YML format
-* @param sch_path {string} path to the standard schema for standard std_path
-* @param part_id {number} part ID
-* @returns {Object} object.nodes is an array of [node numbers, node data, path to node]
+* @param {string} std_path - path to a standard in YML format
+* @param {string} sch_path - path to the standard schema for standard std_path
+* @param {number} part_id - part ID
+* @returns {Object} wraps node numbers and associated metadata, see source code
 */
 Gcapp.num_ext = async function(std_path, sch_path, part_id) {
     // Get the property name for the part code we're interested in
@@ -544,10 +545,10 @@ Gcapp.num_ext = async function(std_path, sch_path, part_id) {
 * Find the symmetric difference between the sets of nodes in two external standard files, expressed as reciprocal asymmetric differences.
 * Note that identical standards and permuted standards will return the same result
 * @static
-* @param path1 {string} path to standard A in YML format
-* @param path2 {string} path to standard B in YML format
-* @param sch_path {string} path to the standard schema for both standards
-* @returns {Object} object.a is the asymmetric difference of A and B, object.b is the asymmetric difference of B and A
+* @param {string} path1 - path to standard A in YML format
+* @param {string} path2 - path to standard B in YML format
+* @param {string} sch_path - path to the standard schema for both standards
+* @returns {Object} wraps asymmetric differences, see source code
 */
 Gcapp.cmp_ext = async function(path1, path2, sch_path) {
     const doca_tree = await Gcapp.load_std_ext(path1, sch_path);
@@ -566,8 +567,8 @@ Gcapp.cmp_ext = async function(path1, path2, sch_path) {
 /**
 * Validate an external standard file against a standard schema
 * @static
-* @param std_path {string} path to a standard in YML format
-* @param sch_path {string} path to the standard schema for standard std_path
+* @param {string} std_path - path to a standard in YML format
+* @param {string} sch_path - path to the standard schema for standard std_path
 * @returns {boolean} true if the standard is a valid instance of schema sch_path
 */
 Gcapp.valid_ext = async function(std_path, sch_path) {
@@ -584,9 +585,9 @@ Gcapp.valid_ext = async function(std_path, sch_path) {
 /**
 * Find which elements of an external evaluation set are resolved for a given external standard
 * @static
-* @param eval_path {string} path to an evaluation set in YML format
-* @param std_path {string} path to a standard in YML format
-* @returns {Object} object.resolved contains resolved parts of the standard, object.unresolved contains unresolved hashes
+* @param {string} eval_path - path to an evaluation set in YML format
+* @param {string} std_path - path to a standard in YML format
+* @returns {Object} wrapper for resolved parts and associated metadata, see source code
 */
 Gcapp.checkset_ext = async function(eval_path, std_path) {
     const ev = Gcapp.load_eval_set_ext(eval_path);
@@ -635,7 +636,7 @@ Gcapp.prototype.init = async function() {
 
 /**
 * Return a list of the data modules associated with this instance of Gacpp
-* @returns {Array} a list of data modules
+* @returns {Array.<Gcstore>} a list of data modules
 */
 Gcapp.prototype.get_data_modules = function() {
     return this.data_modules;

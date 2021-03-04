@@ -9,11 +9,10 @@ const gcutil = require("../gcutil/gcutil.js");
 
 /**
 * Systemwide default hash function.
-* You probably shouldn't call this directly - prefer TK LINK TO GCAPP.DHASH
-* @function DEFAULT_HASH
+* You probably shouldn't call this directly - prefer {@link module:gcapp~Gcapp.dhash}
+* @memberof gcapp_config
 * @param {any} data - the value to hash
 * @returns {string}
-* @memberof gcapp_config
 */
 const DEFAULT_HASH = function(data) {
     if (typeof data !== "string") {
@@ -25,7 +24,7 @@ const DEFAULT_HASH = function(data) {
 
 /**
 * Systemwide vector definitions.
-* You probably shouldn't fetch this directly - prefer TK LINK TO GCAPP.GET_VECTOR_NAMES
+* You probably shouldn't fetch this directly - prefer {@link module:gcapp~Gcapp.get_vector_names}
 * @memberof gcapp_config
 * @constant
 */

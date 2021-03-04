@@ -9,7 +9,7 @@
 * Get all the keys corresponding to nonscalar values in a standard (as defined by its schema).
 * You probably shouldn't call this directly - prefer {@link module:gcapp~Gcapp.get_nonscalar_keys}
 * @param {Object} val - a standard schema in jsonschema format
-* @returns {Array} a list of keys
+* @returns {Array.<string>} a list of keys
 * @memberof gcstd
 */
 function get_nonscalar_keys(val, key = null, data = []) {

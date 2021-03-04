@@ -16,7 +16,7 @@ const gcstd_eval_schema = require("./schemas/gcstd_eval_schema.js");
 * An evaluation set
 * @constructor
 * @param {Object} config - configuration
-* @param {string} config.name name for the evaluation set
+* @param {string} config.name - name for the evaluation set
 */
 function Gcstd_eval({name} = {}) {
     this.name = name;
@@ -24,7 +24,7 @@ function Gcstd_eval({name} = {}) {
 }
 
 /**
-* Factory function to create a {@link Gcstd_eval} object from a standard and a list of node numbers
+* Factory function to create a {@link module:gcstd_eval~Gcstd_eval} object from a standard and a list of node numbers
 * @static
 * @param {Object} config - configuration
 * @param {Object} config.std - a standard as a Gcntree

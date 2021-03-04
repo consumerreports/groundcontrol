@@ -13,7 +13,8 @@ const TOKEN_PATH = "../gcenv/token.json";
 * Google Sheets data store
 * @constructor 
 * @extends Gcstore
-* @param config {Object} config.cred_path must be a string representing the path for credentials.json 
+* @param {Object} config - configuration
+* @param {string} config.cred_path - path to credentials.json 
 */
 function Gcstore_gs({cred_path = "../gcenv/credentials.json"} = {}) {
    Gcstore_base.call(this);

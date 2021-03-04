@@ -10,7 +10,7 @@ const gc = require("../gcapp/gcapp_config.js");
 /**
 * Fetch the vocabulary of vector names known to this version of Ground Control.
 * You probably shouldn't call this directly - prefer {@link module:gcapp~Gcapp.get_vector_names}
-* @returns {Array} a list of vector names
+* @returns {Array.<string>} a list of vector names
 * @memberof gctax
 */
 function get_vector_names() {
@@ -20,7 +20,7 @@ function get_vector_names() {
 /**
 * Compute the intersection of sets of vectors over an array of testable entities.
 * You probably shouldn't call this directly - prefer {@link module:gcapp~Gcapp.get_common_vecs}
-* @returns {Array} an array representing the set of common vectors
+* @returns {Array.<string>} an array representing the set of common vectors
 * @memberof gctax
 */
 function get_common_vecs(tents) {

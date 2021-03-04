@@ -16,7 +16,7 @@ const gctax_group_schema = require("./schemas/gctax_group_schema.js");
 * @param {Object} config - configuration
 * @param {string} config.name - name for the group
 * @param {string} config.notes - notes associated with the group
-* @param {Array} config.tents - an array of TK LINK TO GCTAX_TENT OBJECTS
+* @param {Array.<module:gctax_tent~Gctax_tent>} config.tents - the testable entities to group
 */
 function Gctax_group({name, notes, tents = []} = {}) {
     this.name = name;

@@ -51,7 +51,7 @@ Gctax_vec_map.prototype.add_link = function(vec_name, data) {
 /**
 * Get all the links associated with a vector in this vector map
 * @param {string} vec_name - the vector to fetch links for
-* @returns {Array} an array of data associated with vector vec_name
+* @returns {Array.<any>} an array of link data associated with vector vec_name
 */
 Gctax_vec_map.prototype.get_links = function(vec_name) {
     return this.data.get(vec_name);

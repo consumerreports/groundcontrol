@@ -27,8 +27,8 @@ Gcstore.prototype.shutdown = function() {
 /**
 * Save data to this data store
 * @abstract
-* @param key {string} key, usage is subclass dependent
-* @param val {Any} value to save
+* @param {string} key - key, usage is subclass dependent
+* @param {Any} val - value to save
 */
 Gcstore.prototype.put = function(key, val) {
     throw new Error("Subclasses must implement 'put'");    
@@ -37,7 +37,7 @@ Gcstore.prototype.put = function(key, val) {
 /**
 * Fetch data from this data store
 * @abstract
-* @param key {string} key, usage is subclass dependent
+* @param {string} key - key, usage is subclass dependent
 */
 Gcstore.prototype.get = function(key) {
     throw new Error("Subclasses must implement 'get'");

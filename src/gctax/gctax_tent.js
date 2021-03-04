@@ -16,7 +16,7 @@ const gctax_tent_schema = require("./schemas/gctax_tent_schema.js");
 * @param {Object} config - configuration
 * @param {string} config.name - name for the testable entity
 * @param {string} config.notes - notes to associate with the testable entity
-* @param {Array} config.vecs - an array of vector names
+* @param {Array.<string>} config.vecs - vectors to assign to this testable entity
 */
 function Gctax_tent({name, notes, vecs = []} = []) {
     this.name = name;
@@ -39,7 +39,7 @@ Gctax_tent.is_valid = function(tent) {
 * Fetch the set of vectors associated with a testable entity that are unknown to this version of Ground Control
 * @static
 * @param {module:gctax_tent~Gctax_tent} tent - a testable entity
-* @returns {Array} - an array of vector names
+* @returns {Array.<string>} - unknown vector names
 */
 Gctax_tent.get_unknown_vecs = function(tent) {
     const vec_names = new Set(gctax.get_vector_names());

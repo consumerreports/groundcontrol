@@ -7,7 +7,9 @@ Ground Control was developed at [Consumer Reports Digital Lab](https://digital-l
 ### Software system
 
 Ground Control API
+
 gcsh
+
 web client (coming soon)
 
 ### Requirements

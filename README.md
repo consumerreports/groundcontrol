@@ -1,6 +1,14 @@
 # Ground Control
 
-This is prototype grade software! Use at your own risk.
+Ground Control is a system for managing and applying mutable standards as part of a standards-based technology testing program. If you test products or services -- and the standards you apply during testing are subject to complex and frequent changes -- Ground Control can help.
+
+Ground Control was developed at [Consumer Reports Digital Lab](https://digital-lab.consumerreports.org/) to address the specific challenges associated with applying [The Digital Standard](https://thedigitalstandard.org/) as part of a rigorous and ongoing product testing program.
+
+### Software system
+
+Ground Control API
+gcsh
+web client (coming soon)
 
 ### Requirements
 
@@ -23,6 +31,17 @@ cd src/gcsh
 
 node gcsh.js
 ```
+
+### Mutable standards: the problem space
+
+If you're serious about product testing, then you must not only apply standards in a rigorous way at test time -- you must also be able to look back at your test history and understand how and why previous tests were performed. If your standards are constantly evolving, it's hard to do this gracefully. Given a consumer product, tested many times over an interval of several years, how do you perform meaningful longitudinal comparisons if your testing standard (and corresponding methodologies) have changed along the way? When your standard is a community-maintained living document like [The Digital Standard](https://thedigitalstandard.org/), this question becomes even harder to answer.
+
+Ground Control models this challenge as a state management problem and solves it using two functional programming-ish ideas:
+
+1. Declare our data immutably<sup>1</sup>
+2. Express our outputs (like test plans) as functions which map values to new values, rather than state
+
+<sup>1</sup> We haven't yet implemented immutable data storage. Want to work on it together? Become a contributor.
 
 ### Integration with external services
 

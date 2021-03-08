@@ -1,7 +1,0 @@
-tent: Example Streaming Media Player B
-notes: This is a toy product definition for demo purposes
-vecs:
-    - vec: PW_COMPLEXITY
-    - vec: ENCRYPTION
-    - vec: AUTO_SECURITY_UPDATES
-    - vec: SECURITY_UPDATE_NOTIFICATION

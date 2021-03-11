@@ -19,7 +19,7 @@ Node.js > 12
 ### :floppy_disk: Installation
 
 ```bash
-git clone https://github.com/noahlevenson/groundcontrol
+git clone https://github.com/consumerreports/groundcontrol
 
 cd groundcontrol/src
 

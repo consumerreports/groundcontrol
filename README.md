@@ -6,7 +6,7 @@ Ground Control was developed at [Consumer Reports Digital Lab](https://digital-l
 
 ### :notebook: Documentation
 
-Ground Control API
+[Ground Control API](https://consumerreports.github.io/groundcontrol)
 
 gcsh
 

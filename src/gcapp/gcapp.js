@@ -122,7 +122,6 @@ Gcapp.text_search_nodes = function(std, str) {
 */
 Gcapp.asymdif = function(a, b) {
     // TODO: this is O(a * b), right? and it's always worst case bc we don't terminate DFS early
-    // maybe create a BST of hashes and check in O(h)?
     return a.dfs((node, bad_nodes) => {
         const hash_a = Gcapp.dhash(node.data);
         let found = false;

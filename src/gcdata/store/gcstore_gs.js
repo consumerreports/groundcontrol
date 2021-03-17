@@ -50,7 +50,7 @@ Gcstore_gs.prototype.init = function() {
                 scope: SCOPES,
             });
 
-            Gclog.log("[GCDATA] Authorize Ground Control to use your Google Sheets account by visiting this URL:", authUrl);
+            Gclog.log(`[GCDATA] Authorize Ground Control to use your Google Sheets account by visiting this URL: ${authUrl}`);
             
             const rl = readline.createInterface({
                 input: process.stdin,
@@ -73,7 +73,7 @@ Gcstore_gs.prototype.init = function() {
                             reject(err);
                         }
                         
-                        Gclog.log("[GCDATA] Token stored to", TOKEN_PATH);
+                        Gclog.log(`[GCDATA] Token stored to ${TOKEN_PATH}`);
                         resolve();
                     });
              
